@@ -1,11 +1,12 @@
+import { App as CapApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Route, Switch } from 'react-router-dom';
 import { useEffect } from 'react';
 import { DashboardScreen } from './screens/DashboardScreen';
 
-// Initialize Ionic React with custom settings
 setupIonicReact({
   mode: 'ios',
   swipeBackEnabled: true,
@@ -14,15 +15,29 @@ setupIonicReact({
 
 function App() {
   useEffect(() => {
-    const configureStatusBar = async () => {
+    const initNative = async () => {
       try {
         await StatusBar.setStyle({ style: Style.Dark });
         await StatusBar.setBackgroundColor({ color: '#0d0d12' });
+        await SplashScreen.hide();
       } catch {
-        // StatusBar not available on web platform
+        // Plugins indisponíveis no navegador (ionic serve)
       }
     };
-    configureStatusBar();
+
+    initNative();
+
+    const backListener = CapApp.addListener('backButton', ({ canGoBack }) => {
+      if (canGoBack) {
+        window.history.back();
+      } else {
+        CapApp.exitApp();
+      }
+    });
+
+    return () => {
+      void backListener.then((l) => l.remove());
+    };
   }, []);
 
   return (

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">App Rotina</string>
+    <string name="title_activity_main">App Rotina</string>
+    <string name="package_name">com.joaolops3.approtina</string>
+    <string name="custom_url_scheme">com.joaolops3.approtina</string>
+</resources>

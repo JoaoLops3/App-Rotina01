@@ -3,12 +3,7 @@ import { motion } from 'framer-motion';
 import {
   IonPage,
   IonContent,
-  IonIcon,
-  IonFab,
-  IonFabButton,
-  IonFabList,
 } from '@ionic/react';
-import { add } from 'ionicons/icons';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { HeaderBar } from '../components/HeaderBar';
 import { TaskCard, Task, TaskStatus } from '../components/TaskCard';
@@ -251,17 +246,6 @@ export function DashboardScreen() {
             )}
           </div>
         </div>
-
-        {/* Floating Action Button */}
-        <IonFab vertical="bottom" horizontal="end" slot="fixed">
-          <IonFabButton style={{ '--background': 'linear-gradient(to bottom right, #34d399, #10b981)', '--box-shadow': '0 0 40px rgba(52, 211, 153, 0.3)' }}>
-            <IonIcon icon={add} style={{ color: '#0d0d12' }} />
-            <IonFabList side="start">
-              <IonFabButton>Nova Tarefa</IonFabButton>
-              <IonFabButton>Quick Capture</IonFabButton>
-            </IonFabList>
-          </IonFabButton>
-        </IonFab>
 
         {/* Custom Tab Bar */}
         <CustomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
