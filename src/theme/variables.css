@@ -1,0 +1,325 @@
+/* Ionic Core CSS - Import directly from package */
+@import '@ionic/react/css/core.css';
+@import '@ionic/react/css/normalize.css';
+@import '@ionic/react/css/structure.css';
+@import '@ionic/react/css/typography.css';
+
+/* Ionic Variables and Theming - HEAVILY CUSTOMIZED */
+
+/* Core Colors - Override Ionic defaults with premium palette */
+:root {
+  /* Primary - Mint accent */
+  --ion-color-primary: #34d399;
+  --ion-color-primary-rgb: 52, 211, 153;
+  --ion-color-primary-contrast: #0d0d12;
+  --ion-color-primary-contrast-rgb: 13, 13, 18;
+  --ion-color-primary-shade: #2eb88a;
+  --ion-color-primary-tint: #48d7a3;
+
+  /* Secondary - Electric accent */
+  --ion-color-secondary: #a78bfa;
+  --ion-color-secondary-rgb: 167, 139, 250;
+  --ion-color-secondary-contrast: #0d0d12;
+  --ion-color-secondary-contrast-rgb: 13, 13, 18;
+  --ion-color-secondary-shade: #937adc;
+  --ion-color-secondary-tint: #b097fb;
+
+  /* Tertiary - Coral accent */
+  --ion-color-tertiary: #f97316;
+  --ion-color-tertiary-rgb: 249, 115, 22;
+  --ion-color-tertiary-contrast: #0d0d12;
+  --ion-color-tertiary-contrast-rgb: 13, 13, 18;
+  --ion-color-tertiary-shade: #db6614;
+  --ion-color-tertiary-tint: #fa812e;
+
+  /* Success */
+  --ion-color-success: #34d399;
+  --ion-color-success-rgb: 52, 211, 153;
+  --ion-color-success-contrast: #0d0d12;
+  --ion-color-success-contrast-rgb: 13, 13, 18;
+  --ion-color-success-shade: #2eb88a;
+  --ion-color-success-tint: #48d7a3;
+
+  /* Warning */
+  --ion-color-warning: #fb923c;
+  --ion-color-warning-rgb: 251, 146, 60;
+  --ion-color-warning-contrast: #0d0d12;
+  --ion-color-warning-contrast-rgb: 13, 13, 18;
+  --ion-color-warning-shade: #de8135;
+  --ion-color-warning-tint: #fb9d4f;
+
+  /* Danger */
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15757;
+
+  /* Dark theme colors */
+  --ion-color-dark: #f7f7f8;
+  --ion-color-dark-rgb: 247, 247, 248;
+  --ion-color-dark-contrast: #0d0d12;
+  --ion-color-dark-contrast-rgb: 13, 13, 18;
+  --ion-color-dark-shade: #d9d9e3;
+  --ion-color-dark-tint: #f8f8f9;
+
+  /* Medium - muted text */
+  --ion-color-medium: #999aa5;
+  --ion-color-medium-rgb: 153, 154, 165;
+  --ion-color-medium-contrast: #0d0d12;
+  --ion-color-medium-contrast-rgb: 13, 13, 18;
+  --ion-color-medium-shade: #878890;
+  --ion-color-medium-tint: #a3a4ae;
+
+  /* Light */
+  --ion-color-light: #ececf1;
+  --ion-color-light-rgb: 236, 236, 241;
+  --ion-color-light-contrast: #0d0d12;
+  --ion-color-light-contrast-rgb: 13, 13, 18;
+  --ion-color-light-shade: #d0d0d4;
+  --ion-color-light-tint: #eeeeeee;
+}
+
+/* Dark Theme - Premium obsidian */
+:root {
+  /* Background */
+  --ion-background-color: #0d0d12;
+  --ion-background-color-rgb: 13, 13, 18;
+
+  /* Text */
+  --ion-text-color: #f7f7f8;
+  --ion-text-color-rgb: 247, 247, 248;
+
+  /* Border */
+  --ion-border-color: rgba(255, 255, 255, 0.08);
+
+  /* Toolbar */
+  --ion-toolbar-background: #0d0d12;
+  --ion-toolbar-color: #f7f7f8;
+
+  /* Card */
+  --ion-card-background: #1a1a22;
+
+  /* Item */
+  --ion-item-background: transparent;
+  --ion-item-border-color: rgba(255, 255, 255, 0.05);
+
+  /* Font Override */
+  --ion-font-family: 'Inter', system-ui, sans-serif;
+
+  /* Safe area */
+  --ion-safe-area-top: env(safe-area-inset-top);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom);
+  --ion-safe-area-left: env(safe-area-inset-left);
+  --ion-safe-area-right: env(safe-area-inset-right);
+}
+
+/* Override Ionic components */
+ion-content {
+  --background: #0d0d12;
+  --color: #f7f7f8;
+}
+
+ion-card {
+  --background: #1a1a22;
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+ion-card-header {
+  padding: 1.25rem 1.25rem 0;
+}
+
+ion-card-content {
+  padding: 1.25rem;
+}
+
+ion-list {
+  background: transparent;
+}
+
+ion-item {
+  --background: transparent;
+  --border-color: rgba(255, 255, 255, 0.05);
+  --background-hover: rgba(255, 255, 255, 0.03);
+  --background-activated: rgba(255, 255, 255, 0.05);
+  --inner-border-width: 0;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --min-height: 64px;
+}
+
+ion-button {
+  --border-radius: 1rem;
+  --background: linear-gradient(to right, #34d399, #6ee7b7);
+  --color: #0d0d12;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  height: 48px;
+}
+
+ion-button.button-outline {
+  --border-radius: 1rem;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --color: #babac5;
+  --background: transparent;
+  height: 48px;
+}
+
+ion-fab-button {
+  --background: linear-gradient(to bottom right, #34d399, #10b981);
+  --background-hover: linear-gradient(to bottom right, #34d399, #10b981);
+  --box-shadow: 0 0 40px rgba(52, 211, 153, 0.3);
+}
+
+ion-toolbar {
+  --border-width: 0;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+}
+
+ion-title {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+ion-tabs {
+  background: transparent;
+}
+
+ion-tab-bar {
+  --background: rgba(26, 26, 34, 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1.5rem 1.5rem 0 0;
+  height: 80px;
+}
+
+ion-tab-button {
+  --color: #999aa5;
+  --color-selected: #34d399;
+  --background: transparent;
+  --padding-top: 0.5rem;
+  --padding-bottom: 0.5rem;
+}
+
+ion-tab-button.tab-selected {
+  --color: #34d399;
+}
+
+ion-icon {
+  stroke-width: 1.5;
+}
+
+/* Hide Ionic's default back button text */
+ion-back-button {
+  --icon-font-size: 1.5rem;
+  --color: #babac5;
+}
+
+/* Loading spinner */
+ion-loading {
+  --spinner-color: #34d399;
+  --background: rgba(13, 13, 18, 0.9);
+  --backdrop-opacity: 0.5;
+}
+
+/* Toast */
+ion-toast {
+  --background: #1a1a22;
+  --color: #f7f7f8;
+  --border-radius: 1rem;
+}
+
+/* Alert */
+ion-alert {
+  --background: #1a1a22;
+  --border-radius: 1.5rem;
+}
+
+/* Search Bar */
+ion-searchbar {
+  --background: #1a1a22;
+  --border-radius: 1rem;
+  --color: #f7f7f8;
+  --placeholder-color: #999aa5;
+  --icon-color: #999aa5;
+}
+
+/* Segment */
+ion-segment {
+  --background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
+  padding: 0.25rem;
+}
+
+ion-segment-button {
+  --indicator-color: rgba(52, 211, 153, 0.2);
+  --border-radius: 0.5rem;
+  --color: #999aa5;
+  --color-checked: #34d399;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  min-height: 40px;
+}
+
+/* Badge */
+ion-badge {
+  --background: rgba(52, 211, 153, 0.2);
+  --color: #34d399;
+  border-radius: 0.5rem;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-weight: 500;
+}
+
+/* Chip */
+ion-chip {
+  --background: rgba(255, 255, 255, 0.05);
+  --color: #babac5;
+  border-radius: 1rem;
+}
+
+/* Range slider */
+ion-range {
+  --bar-background: #252530;
+  --bar-background-active: #34d399;
+  --knob-background: #34d399;
+  --knob-box-shadow: 0 0 20px rgba(52, 211, 153, 0.4);
+}
+
+/* Toggle */
+ion-toggle {
+  --background: #252530;
+  --background-checked: #34d399;
+  --handle-background: #f7f7f8;
+  --handle-background-checked: #0d0d12;
+}
+
+/* Checkbox */
+ion-checkbox {
+  --background: #252530;
+  --background-checked: #34d399;
+  --checkmark-color: #0d0d12;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color-checked: #34d399;
+  border-radius: 0.5rem;
+}
+
+/* Radio */
+ion-radio {
+  --color: #252530;
+  --color-checked: #34d399;
+}
+
+/* Remove Ionic's default scroll indicator */
+ion-content::part(scroll) {
+  scrollbar-width: none;
+}
+
+ion-content::part(scroll)::-webkit-scrollbar {
+  display: none;
+}

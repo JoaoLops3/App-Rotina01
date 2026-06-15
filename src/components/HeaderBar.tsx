@@ -1,0 +1,68 @@
+import { motion } from 'framer-motion';
+import { Settings, Bell } from 'lucide-react';
+
+interface HeaderProps {
+  greeting: string;
+  userName: string;
+  avatarUrl?: string;
+}
+
+export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="flex items-center justify-between px-4 pt-12 pb-2"
+    >
+      <div className="flex items-center gap-3">
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative"
+        >
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5" style={{ boxShadow: '0 0 20px rgba(52, 211, 153, 0.2)' }}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={userName} className="w-full h-full rounded-[14px] object-cover" />
+            ) : (
+              <div className="w-full h-full rounded-[14px] bg-surface-primary flex items-center justify-center">
+                <span className="font-display font-bold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                  {userName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-mint-400 border-[2px] border-surface-primary" />
+        </motion.div>
+
+        <div>
+          <p className="text-xs text-obsidian-500 font-medium tracking-wide uppercase">
+            {greeting}
+          </p>
+          <h1 className="font-display font-semibold text-lg text-white tracking-tight" style={{ fontFamily: 'Space Grotesk' }}>
+            {userName}
+          </h1>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="relative p-3 rounded-2xl bg-surface-secondary transition-colors hover:bg-surface-tertiary"
+        >
+          <Bell className="w-5 h-5 text-obsidian-300" strokeWidth={1.5} />
+          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-coral-400" />
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.1, rotate: 45 }}
+          whileTap={{ scale: 0.9 }}
+          className="p-3 rounded-2xl bg-surface-secondary transition-colors hover:bg-surface-tertiary"
+        >
+          <Settings className="w-5 h-5 text-obsidian-300" strokeWidth={1.5} />
+        </motion.button>
+      </div>
+    </motion.header>
+  );
+}
