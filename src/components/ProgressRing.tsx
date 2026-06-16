@@ -40,7 +40,7 @@ export function ProgressRing({
           cy={size / 2}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
           style={{
             strokeDasharray: circumference,
             filter: 'drop-shadow(0 0 8px rgba(110, 231, 183, 0.4))',
@@ -56,7 +56,15 @@ export function ProgressRing({
         </defs>
       </svg>
 
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div
+        className="absolute flex flex-col items-center justify-center overflow-hidden text-center"
+        style={{
+          top: strokeWidth + 6,
+          right: strokeWidth + 6,
+          bottom: strokeWidth + 6,
+          left: strokeWidth + 6,
+        }}
+      >
         {children}
       </div>
     </div>

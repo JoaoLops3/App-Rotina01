@@ -85,7 +85,9 @@ export function DashboardScreen() {
 
   const activeTask = tasks.find((t) => t.status === 'active');
   const dailyGoal = 300;
-  const progressPercent = Math.min((focusMinutes / dailyGoal) * 100, 100);
+  const sessionProgress = activeTask
+    ? Math.min((activeTask.elapsed / activeTask.duration) * 100, 100)
+    : 0;
 
   useEffect(() => {
     if (!activeTask) return;
@@ -150,13 +152,16 @@ export function DashboardScreen() {
               <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mt-2">
                 <div className="card-glass p-5">
                   <div className="flex items-center gap-5">
-                    <ProgressRing progress={progressPercent} size={100} strokeWidth={6}>
-                      <div className="text-center">
-                        <p className="font-display font-bold text-2xl text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                          {Math.floor((activeTask.duration - activeTask.elapsed) / 60)}
-                        </p>
-                        <p className="text-[10px] text-obsidian-500 uppercase tracking-wider">min restantes</p>
-                      </div>
+                    <ProgressRing progress={sessionProgress} size={100} strokeWidth={6}>
+                      <p
+                        className="m-0 font-display font-bold text-xl text-white leading-none"
+                        style={{ fontFamily: 'Space Grotesk' }}
+                      >
+                        {Math.floor((activeTask.duration - activeTask.elapsed) / 60)}
+                      </p>
+                      <p className="m-0 mt-0.5 text-[8px] text-obsidian-500 uppercase tracking-wide leading-none whitespace-nowrap">
+                        min restantes
+                      </p>
                     </ProgressRing>
 
                     <div className="flex-1">

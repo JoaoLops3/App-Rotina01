@@ -35,11 +35,14 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-mint-400 border-[2px] border-surface-primary" />
         </motion.div>
 
-        <div>
-          <p className="text-xs text-obsidian-500 font-medium tracking-wide uppercase">
+        <div className="flex flex-col justify-center gap-0.5 pt-0.5">
+          <p className="m-0 text-xs text-obsidian-500 font-medium tracking-wide uppercase leading-none">
             {greeting}
           </p>
-          <h1 className="font-display font-semibold text-lg text-white tracking-tight" style={{ fontFamily: 'Space Grotesk' }}>
+          <h1
+            className="m-0 font-display font-semibold text-lg text-white tracking-tight leading-tight"
+            style={{ fontFamily: 'Space Grotesk' }}
+          >
             {userName}
           </h1>
         </div>
