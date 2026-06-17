@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   IonPage,
@@ -10,6 +10,7 @@ import { TaskCard, Task, TaskStatus } from '../components/TaskCard';
 import { StatsWidget } from '../components/StatsWidget';
 import { ProgressRing } from '../components/ProgressRing';
 import { CustomTabBar } from '../components/CustomTabBar';
+import { captureEvent } from '../lib/posthog';
 
 const sampleTasks: Task[] = [
   {
@@ -88,6 +89,7 @@ export function DashboardScreen() {
   const sessionProgress = activeTask
     ? Math.min((activeTask.elapsed / activeTask.duration) * 100, 100)
     : 0;
+  const sessionCompletedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!activeTask) return;
@@ -96,7 +98,18 @@ export function DashboardScreen() {
       setTasks((prevTasks) =>
         prevTasks.map((task) => {
           if (task.id === activeTask.id && task.elapsed < task.duration) {
-            return { ...task, elapsed: task.elapsed + 1 };
+            const updated = { ...task, elapsed: task.elapsed + 1 };
+            if (updated.elapsed >= updated.duration && !sessionCompletedRef.current.has(task.id)) {
+              sessionCompletedRef.current.add(task.id);
+              captureEvent('session progress updated', {
+                task_id: task.id,
+                task_title: task.title,
+                task_category: task.category,
+                task_duration_minutes: Math.floor(task.duration / 60),
+                progress_percent: 100,
+              });
+            }
+            return updated;
           }
           return task;
         })
@@ -107,19 +120,32 @@ export function DashboardScreen() {
   }, [activeTask]);
 
   const handleStatusChange = (id: string, newStatus: TaskStatus) => {
-    setTasks((prev) =>
-      prev.map((task) =>
+    setTasks((prev) => {
+      const updated = prev.map((task) =>
         task.id === id ? { ...task, status: newStatus } : task
-      )
-    );
-
-    if (newStatus === 'active') {
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === id ? { ...task, status: 'active' } :
-          task.status === 'active' ? { ...task, status: 'paused' } : task
-        )
       );
+      if (newStatus === 'active') {
+        return updated.map((task) =>
+          task.id === id ? task :
+          task.status === 'active' ? { ...task, status: 'paused' } : task
+        );
+      }
+      return updated;
+    });
+
+    if (newStatus === 'completed') {
+      const task = tasks.find((t) => t.id === id);
+      if (task) {
+        captureEvent('task completed', {
+          task_id: task.id,
+          task_title: task.title,
+          task_category: task.category,
+          task_priority: task.priority,
+          task_duration_minutes: Math.floor(task.duration / 60),
+          task_elapsed_minutes: Math.floor(task.elapsed / 60),
+          completion_rate: Math.round((task.elapsed / task.duration) * 100),
+        });
+      }
     }
   };
 
@@ -189,7 +215,17 @@ export function DashboardScreen() {
                 <h2 className="font-display font-semibold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
                   Estatísticas do Dia
                 </h2>
-                <motion.button whileHover={{ x: 2 }} className="text-obsidian-400 flex items-center gap-1 text-sm hover:text-obsidian-300 transition-colors">
+                <motion.button
+                  whileHover={{ x: 2 }}
+                  className="text-obsidian-400 flex items-center gap-1 text-sm hover:text-obsidian-300 transition-colors"
+                  onClick={() => {
+                    captureEvent('stats viewed', {
+                      focus_minutes: focusMinutes,
+                      tasks_completed: completedTasks.length,
+                      total_tasks: tasks.length,
+                    });
+                  }}
+                >
                   Ver Tudo
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>

@@ -21,3 +21,13 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.*
+
+# Cursor / Claude (planos e configs locais — não publicar)
+.cursor/
+.cursor/**
+**/.cursor/plans/
+*.plan.md
+
+# PostHog wizard (skills locais do agente)
+.claude/

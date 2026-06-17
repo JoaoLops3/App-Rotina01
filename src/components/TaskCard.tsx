@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Check, Clock, MoreVertical, RotateCcw, Zap } from 'lucide-react';
+import { captureEvent } from '../lib/posthog';
 
 export type TaskStatus = 'active' | 'pending' | 'paused' | 'completed';
 export type TaskPriority = 'low' | 'medium' | 'high';
@@ -67,7 +68,19 @@ export function TaskCard({ task, index, isActive = false, onStatusChange }: Task
       <div className="flex items-start gap-4">
         <motion.button
           whileTap={{ scale: 0.9 }}
-          onClick={() => onStatusChange?.(task.id, task.status === 'active' ? 'paused' : 'active')}
+          onClick={() => {
+            const nextStatus = task.status === 'active' ? 'paused' : 'active';
+            const eventName = nextStatus === 'active' ? 'task started' : 'task paused';
+            captureEvent(eventName, {
+              task_id: task.id,
+              task_title: task.title,
+              task_category: task.category,
+              task_priority: task.priority,
+              task_duration_minutes: Math.floor(task.duration / 60),
+              task_elapsed_minutes: Math.floor(task.elapsed / 60),
+            });
+            onStatusChange?.(task.id, nextStatus);
+          }}
           className={`relative w-12 h-12 rounded-2xl flex items-center justify-center transition-colors duration-200 ${isActive ? 'bg-mint-500/20' : 'bg-surface-tertiary hover:bg-surface-elevated'}`}
           style={isActive ? { boxShadow: '0 0 20px rgba(52, 211, 153, 0.15)' } : {}}
         >

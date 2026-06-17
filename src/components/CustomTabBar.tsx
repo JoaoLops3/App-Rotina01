@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Home, Calendar, BarChart, User, Plus } from 'lucide-react';
+import { captureEvent } from '../lib/posthog';
 
 type TabId = 'home' | 'schedule' | 'stats' | 'profile';
 
@@ -33,9 +34,17 @@ function TabButton({
 }) {
   const Icon = tab.icon;
 
+  function handleTabClick() {
+    captureEvent('tab changed', {
+      tab: tab.id,
+      tab_label: tab.label,
+    });
+    onTabChange(tab.id);
+  }
+
   return (
     <motion.button
-      onClick={() => onTabChange(tab.id)}
+      onClick={handleTabClick}
       whileTap={{ scale: 0.9 }}
       className="relative flex flex-col items-center gap-1 py-2 px-4 rounded-2xl transition-colors touch-manipulation"
     >
@@ -104,7 +113,10 @@ export function CustomTabBar({ activeTab, onTabChange, onCenterClick }: CustomTa
             ))}
 
             <motion.button
-              onClick={onCenterClick}
+              onClick={() => {
+                captureEvent('add task tapped');
+                onCenterClick?.();
+              }}
               whileTap={{ scale: 0.9 }}
               className="relative flex items-center justify-center p-2 rounded-2xl transition-colors touch-manipulation"
             >

@@ -6,6 +6,7 @@ import { IonReactRouter } from '@ionic/react-router';
 import { Route, Switch } from 'react-router-dom';
 import { useEffect } from 'react';
 import { DashboardScreen } from './screens/DashboardScreen';
+import { posthog } from './lib/posthog';
 
 setupIonicReact({
   mode: 'ios',
@@ -20,8 +21,11 @@ function App() {
         await StatusBar.setStyle({ style: Style.Dark });
         await StatusBar.setBackgroundColor({ color: '#0d0d12' });
         await SplashScreen.hide();
-      } catch {
-        // Plugins indisponíveis no navegador (ionic serve)
+      } catch (err) {
+        // Plugins unavailable in browser (ionic serve)
+        if (err instanceof Error && err.message && !err.message.includes('not implemented')) {
+          posthog.captureException(err);
+        }
       }
     };
 
