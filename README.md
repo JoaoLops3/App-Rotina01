@@ -1,3 +1,10 @@
-# aaaaaaaaaaaaaaaa
+# App-Rotina
 
-[![Open in Bolt](https://bolt.new/static/open-in-bolt.svg)](https://bolt.new/~/sb1-hetolgj1)
+App de rotina diária — Ionic 8 + Capacitor + React.
+
+## Scripts
+
+- `npm run dev` — servidor de desenvolvimento
+- `npm run build` — build de produção
+- `npm run cap:android` — sincroniza e abre o Android Studio
+- `npm run cap:ios` — sincroniza e abre o Xcode
