@@ -11,6 +11,13 @@ import { StatsWidget } from '../components/StatsWidget';
 import { ProgressRing } from '../components/ProgressRing';
 import { CustomTabBar } from '../components/CustomTabBar';
 import { captureEvent } from '../lib/posthog';
+import {
+  addMomentum,
+  computeFocusSeconds,
+  computeGoalProgressPercent,
+  formatFocusTime,
+  getMomentum,
+} from '../lib/day-stats';
 
 const sampleTasks: Task[] = [
   {
@@ -64,7 +71,7 @@ const sampleTasks: Task[] = [
   },
 ];
 
-const todayFocus = 222;
+const dailyGoalMinutes = 300;
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -73,23 +80,33 @@ function getGreeting(): string {
   return 'Boa noite';
 }
 
-function formatFocusTime(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}h ${mins}m`;
-}
-
 export function DashboardScreen() {
   const [tasks, setTasks] = useState<Task[]>(sampleTasks);
-  const [focusMinutes] = useState(todayFocus);
+  const [momentum, setMomentum] = useState(getMomentum);
   const [activeTab, setActiveTab] = useState('home');
+  const statsSectionRef = useRef<HTMLElement>(null);
 
   const activeTask = tasks.find((t) => t.status === 'active');
-  const dailyGoal = 300;
+  const focusSeconds = computeFocusSeconds(tasks);
+  const focusMinutes = Math.floor(focusSeconds / 60);
+  const dailyGoal = dailyGoalMinutes;
   const sessionProgress = activeTask
     ? Math.min((activeTask.elapsed / activeTask.duration) * 100, 100)
     : 0;
   const sessionCompletedRef = useRef<Set<string>>(new Set());
+
+  const scrollToStats = () => {
+    setActiveTab('stats');
+    requestAnimationFrame(() => {
+      statsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  useEffect(() => {
+    if (activeTab === 'stats') {
+      statsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (!activeTask) return;
@@ -136,6 +153,7 @@ export function DashboardScreen() {
     if (newStatus === 'completed') {
       const task = tasks.find((t) => t.id === id);
       if (task) {
+        setMomentum(addMomentum());
         captureEvent('task completed', {
           task_id: task.id,
           task_title: task.title,
@@ -210,7 +228,14 @@ export function DashboardScreen() {
             )}
 
             {/* Stats overview */}
-            <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mt-4">
+            <motion.section
+              ref={statsSectionRef}
+              id="stats-section"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mt-4"
+            >
               <div className="flex items-center justify-between mb-3 px-1">
                 <h2 className="font-display font-semibold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
                   Estatísticas do Dia
@@ -223,7 +248,9 @@ export function DashboardScreen() {
                       focus_minutes: focusMinutes,
                       tasks_completed: completedTasks.length,
                       total_tasks: tasks.length,
+                      momentum,
                     });
+                    scrollToStats();
                   }}
                 >
                   Ver Tudo
@@ -233,11 +260,11 @@ export function DashboardScreen() {
               <StatsWidget
                 stats={{
                   focusTime: formatFocusTime(focusMinutes),
-                  focusTrend: '+23%',
+                  focusTrend: computeGoalProgressPercent(focusMinutes, dailyGoal),
                   tasksCompleted: `${completedTasks.length}/${tasks.length}`,
-                  streak: 12,
-                  efficiency: '87%',
+                  momentum,
                 }}
+                onViewStats={scrollToStats}
               />
             </motion.section>
 
