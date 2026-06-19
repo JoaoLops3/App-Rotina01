@@ -16,7 +16,9 @@ import {
   computeGoalPercent,
   formatFocusTime,
   getMomentum,
+  sortByScheduledTime,
 } from '../lib/day-stats';
+import { AgendaScreen } from './AgendaScreen';
 
 const sampleTasks: Task[] = [
   {
@@ -67,6 +69,26 @@ const sampleTasks: Task[] = [
     elapsed: 0,
     status: 'pending',
     priority: 'medium',
+  },
+  {
+    id: '6',
+    title: 'Treino na Academia',
+    category: 'Saúde',
+    duration: 60,
+    elapsed: 0,
+    status: 'pending',
+    priority: 'medium',
+    scheduledTime: '18:00',
+  },
+  {
+    id: '7',
+    title: 'Planejamento do Dia Seguinte',
+    category: 'Focus',
+    duration: 20,
+    elapsed: 0,
+    status: 'pending',
+    priority: 'low',
+    scheduledTime: '21:00',
   },
 ];
 
@@ -163,7 +185,8 @@ export function DashboardScreen() {
     });
   };
 
-  const upcomingTasks = tasks.filter((t) => t.status === 'pending');
+  const upcomingTasks = sortByScheduledTime(tasks.filter((t) => t.status === 'pending'));
+  const visibleUpcoming = upcomingTasks.slice(0, 3);
   const completedTasks = tasks.filter((t) => t.status === 'completed');
 
   const focusPercent = computeGoalPercent(focusMinutes, dailyGoal);
@@ -179,6 +202,14 @@ export function DashboardScreen() {
       momentum,
     });
     scrollToStats();
+  };
+
+  const handleViewAllTasks = () => {
+    captureEvent('view all tasks tapped', {
+      upcoming_tasks: upcomingTasks.length,
+      total_tasks: tasks.length,
+    });
+    setActiveTab('schedule');
   };
 
   return (
@@ -199,6 +230,10 @@ export function DashboardScreen() {
         </div>
 
         <div className="relative z-10 min-h-screen pb-32">
+          {activeTab === 'schedule' ? (
+            <AgendaScreen tasks={tasks} onStatusChange={handleStatusChange} />
+          ) : (
+          <>
           <HeaderBar greeting={getGreeting()} userName="Alex" />
 
           <div className="px-4 space-y-6">
@@ -292,10 +327,17 @@ export function DashboardScreen() {
                 <span className="text-obsidian-500 text-sm">{upcomingTasks.length} tarefas</span>
               </div>
               <div className="space-y-3">
-                {upcomingTasks.map((task, index) => (
+                {visibleUpcoming.map((task, index) => (
                   <TaskCard key={task.id} task={task} index={index} onStatusChange={handleStatusChange} />
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={handleViewAllTasks}
+                className="mt-3 w-full py-3 rounded-2xl text-sm font-medium text-mint-400 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] transition-colors touch-manipulation"
+              >
+                Ver todas
+              </button>
             </motion.section>
 
             {/* Completed tasks */}
@@ -312,22 +354,19 @@ export function DashboardScreen() {
                     <TaskCard key={task.id} task={task} index={index} onStatusChange={handleStatusChange} />
                   ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={handleViewAllTasks}
+                  className="mt-3 w-full py-3 rounded-2xl text-sm font-medium text-mint-400 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] transition-colors touch-manipulation"
+                >
+                  Ver todas
+                </button>
               </motion.section>
             )}
 
-            {/* Active task card */}
-            {activeTask && (
-              <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <h2 className="font-display font-semibold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                    Em Andamento
-                  </h2>
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity }} className="w-2 h-2 rounded-full bg-mint-400" />
-                </div>
-                <TaskCard task={activeTask} index={0} isActive onStatusChange={handleStatusChange} />
-              </motion.section>
-            )}
           </div>
+          </>
+          )}
         </div>
 
         {/* Custom Tab Bar */}
