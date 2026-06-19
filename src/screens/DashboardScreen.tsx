@@ -4,7 +4,7 @@ import {
   IonPage,
   IonContent,
 } from '@ionic/react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { HeaderBar } from '../components/HeaderBar';
 import { TaskCard, Task, TaskStatus } from '../components/TaskCard';
 import { StatsWidget } from '../components/StatsWidget';
@@ -14,7 +14,7 @@ import { captureEvent } from '../lib/posthog';
 import {
   addMomentum,
   computeFocusSeconds,
-  computeGoalProgressPercent,
+  computeGoalPercent,
   formatFocusTime,
   getMomentum,
 } from '../lib/day-stats';
@@ -170,6 +170,21 @@ export function DashboardScreen() {
   const upcomingTasks = tasks.filter((t) => t.status === 'pending');
   const completedTasks = tasks.filter((t) => t.status === 'completed');
 
+  const focusPercent = computeGoalPercent(focusMinutes, dailyGoal);
+  const goalHours = Math.round(dailyGoal / 60);
+  const remainingTasks = tasks.length - completedTasks.length;
+  const tasksPercent = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0;
+
+  const handleViewStats = () => {
+    captureEvent('stats viewed', {
+      focus_minutes: focusMinutes,
+      tasks_completed: completedTasks.length,
+      total_tasks: tasks.length,
+      momentum,
+    });
+    scrollToStats();
+  };
+
   return (
     <IonPage>
       <IonContent scrollY={true} className="ion-content-custom">
@@ -236,35 +251,17 @@ export function DashboardScreen() {
               transition={{ delay: 0.1 }}
               className="mt-4"
             >
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-display font-semibold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                  Estatísticas do Dia
-                </h2>
-                <motion.button
-                  whileHover={{ x: 2 }}
-                  className="text-obsidian-400 flex items-center gap-1 text-sm hover:text-obsidian-300 transition-colors"
-                  onClick={() => {
-                    captureEvent('stats viewed', {
-                      focus_minutes: focusMinutes,
-                      tasks_completed: completedTasks.length,
-                      total_tasks: tasks.length,
-                      momentum,
-                    });
-                    scrollToStats();
-                  }}
-                >
-                  Ver Tudo
-                  <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              </div>
               <StatsWidget
                 stats={{
-                  focusTime: formatFocusTime(focusMinutes),
-                  focusTrend: computeGoalProgressPercent(focusMinutes, dailyGoal),
-                  tasksCompleted: `${completedTasks.length}/${tasks.length}`,
+                  focusValue: formatFocusTime(focusMinutes),
+                  focusGoalLabel: `${focusPercent}% da meta de ${goalHours}h`,
+                  focusProgress: focusPercent,
+                  tasksValue: `${completedTasks.length} / ${tasks.length}`,
+                  tasksRemainingLabel: `${remainingTasks} ${remainingTasks === 1 ? 'restante' : 'restantes'} hoje`,
+                  tasksProgress: tasksPercent,
                   momentum,
                 }}
-                onViewStats={scrollToStats}
+                onViewStats={handleViewStats}
               />
             </motion.section>
 
