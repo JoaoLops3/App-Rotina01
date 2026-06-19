@@ -15,6 +15,17 @@ export function addMomentum(amount = 1): number {
   return next;
 }
 
+export function sortByScheduledTime(tasks: Task[]): Task[] {
+  const toMinutes = (time?: string): number => {
+    if (!time) return Number.POSITIVE_INFINITY;
+    const [hours, mins] = time.split(':').map((part) => Number.parseInt(part, 10));
+    if (Number.isNaN(hours) || Number.isNaN(mins)) return Number.POSITIVE_INFINITY;
+    return hours * 60 + mins;
+  };
+
+  return [...tasks].sort((a, b) => toMinutes(a.scheduledTime) - toMinutes(b.scheduledTime));
+}
+
 export function computeFocusSeconds(tasks: Task[]): number {
   return tasks.reduce((sum, task) => {
     if (task.status === 'completed' || task.status === 'active' || task.status === 'paused') {
