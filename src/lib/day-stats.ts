@@ -31,8 +31,11 @@ export function formatFocusTime(minutes: number): string {
   return `${hours}h ${mins}m`;
 }
 
+export function computeGoalPercent(focusMinutes: number, dailyGoalMinutes: number): number {
+  if (dailyGoalMinutes <= 0) return 0;
+  return Math.min(Math.round((focusMinutes / dailyGoalMinutes) * 100), 100);
+}
+
 export function computeGoalProgressPercent(focusMinutes: number, dailyGoalMinutes: number): string {
-  if (dailyGoalMinutes <= 0) return '0%';
-  const percent = Math.min(Math.round((focusMinutes / dailyGoalMinutes) * 100), 100);
-  return `${percent}% meta`;
+  return `${computeGoalPercent(focusMinutes, dailyGoalMinutes)}% meta`;
 }

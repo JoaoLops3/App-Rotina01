@@ -4,7 +4,6 @@ import {
   IonPage,
   IonContent,
 } from '@ionic/react';
-import { ArrowRight, Sparkles } from 'lucide-react';
 import { HeaderBar } from '../components/HeaderBar';
 import { TaskCard, Task, TaskStatus } from '../components/TaskCard';
 import { StatsWidget } from '../components/StatsWidget';
@@ -14,7 +13,7 @@ import { captureEvent } from '../lib/posthog';
 import {
   addMomentum,
   computeFocusSeconds,
-  computeGoalProgressPercent,
+  computeGoalPercent,
   formatFocusTime,
   getMomentum,
 } from '../lib/day-stats';
@@ -93,7 +92,9 @@ export function DashboardScreen() {
   const sessionProgress = activeTask
     ? Math.min((activeTask.elapsed / activeTask.duration) * 100, 100)
     : 0;
-  const sessionCompletedRef = useRef<Set<string>>(new Set());
+  const completedRecordedRef = useRef<Set<string>>(
+    new Set(sampleTasks.filter((t) => t.status === 'completed').map((t) => t.id))
+  );
 
   const scrollToStats = () => {
     setActiveTab('stats');
@@ -114,19 +115,12 @@ export function DashboardScreen() {
     const interval = setInterval(() => {
       setTasks((prevTasks) =>
         prevTasks.map((task) => {
-          if (task.id === activeTask.id && task.elapsed < task.duration) {
-            const updated = { ...task, elapsed: task.elapsed + 1 };
-            if (updated.elapsed >= updated.duration && !sessionCompletedRef.current.has(task.id)) {
-              sessionCompletedRef.current.add(task.id);
-              captureEvent('session progress updated', {
-                task_id: task.id,
-                task_title: task.title,
-                task_category: task.category,
-                task_duration_minutes: Math.floor(task.duration / 60),
-                progress_percent: 100,
-              });
+          if (task.id === activeTask.id && task.status === 'active' && task.elapsed < task.duration) {
+            const nextElapsed = task.elapsed + 1;
+            if (nextElapsed >= task.duration) {
+              return { ...task, elapsed: task.duration, status: 'completed' as TaskStatus };
             }
-            return updated;
+            return { ...task, elapsed: nextElapsed };
           }
           return task;
         })
@@ -135,6 +129,24 @@ export function DashboardScreen() {
 
     return () => clearInterval(interval);
   }, [activeTask]);
+
+  useEffect(() => {
+    tasks.forEach((task) => {
+      if (task.status === 'completed' && !completedRecordedRef.current.has(task.id)) {
+        completedRecordedRef.current.add(task.id);
+        setMomentum(addMomentum());
+        captureEvent('task completed', {
+          task_id: task.id,
+          task_title: task.title,
+          task_category: task.category,
+          task_priority: task.priority,
+          task_duration_minutes: Math.floor(task.duration / 60),
+          task_elapsed_minutes: Math.floor(task.elapsed / 60),
+          completion_rate: Math.round((task.elapsed / task.duration) * 100),
+        });
+      }
+    });
+  }, [tasks]);
 
   const handleStatusChange = (id: string, newStatus: TaskStatus) => {
     setTasks((prev) => {
@@ -149,26 +161,25 @@ export function DashboardScreen() {
       }
       return updated;
     });
-
-    if (newStatus === 'completed') {
-      const task = tasks.find((t) => t.id === id);
-      if (task) {
-        setMomentum(addMomentum());
-        captureEvent('task completed', {
-          task_id: task.id,
-          task_title: task.title,
-          task_category: task.category,
-          task_priority: task.priority,
-          task_duration_minutes: Math.floor(task.duration / 60),
-          task_elapsed_minutes: Math.floor(task.elapsed / 60),
-          completion_rate: Math.round((task.elapsed / task.duration) * 100),
-        });
-      }
-    }
   };
 
   const upcomingTasks = tasks.filter((t) => t.status === 'pending');
   const completedTasks = tasks.filter((t) => t.status === 'completed');
+
+  const focusPercent = computeGoalPercent(focusMinutes, dailyGoal);
+  const goalHours = Math.round(dailyGoal / 60);
+  const remainingTasks = tasks.length - completedTasks.length;
+  const tasksPercent = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0;
+
+  const handleViewStats = () => {
+    captureEvent('stats viewed', {
+      focus_minutes: focusMinutes,
+      tasks_completed: completedTasks.length,
+      total_tasks: tasks.length,
+      momentum,
+    });
+    scrollToStats();
+  };
 
   return (
     <IonPage>
@@ -198,29 +209,51 @@ export function DashboardScreen() {
                   <div className="flex items-center gap-5">
                     <ProgressRing progress={sessionProgress} size={100} strokeWidth={6}>
                       <p
-                        className="m-0 font-display font-bold text-xl text-white leading-none"
+                        className="m-0 font-display font-bold text-xl text-white leading-none tabular-nums"
                         style={{ fontFamily: 'Space Grotesk' }}
                       >
-                        {Math.floor((activeTask.duration - activeTask.elapsed) / 60)}
+                        {String(Math.floor(Math.max(activeTask.duration - activeTask.elapsed, 0) / 60)).padStart(2, '0')}
+                        :
+                        {String(Math.max(activeTask.duration - activeTask.elapsed, 0) % 60).padStart(2, '0')}
                       </p>
                       <p className="m-0 mt-0.5 text-[8px] text-obsidian-500 uppercase tracking-wide leading-none whitespace-nowrap">
-                        min restantes
+                        restando
                       </p>
                     </ProgressRing>
 
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-mint-400" />
-                        <span className="text-xs text-mint-400 font-medium uppercase tracking-wider">
-                          Sessão Ativa
+                        <motion.span
+                          animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="w-2 h-2 rounded-full bg-mint-400"
+                        />
+                        <span className="text-xs text-mint-400 font-semibold uppercase tracking-wider">
+                          Em Andamento
                         </span>
                       </div>
-                      <h2 className="font-display font-semibold text-xl text-white mb-1" style={{ fontFamily: 'Space Grotesk' }}>
+                      <h2 className="font-display font-semibold text-xl text-white mb-1 truncate" style={{ fontFamily: 'Space Grotesk' }}>
                         {activeTask.title}
                       </h2>
-                      <p className="text-sm text-obsidian-400">
-                        Foco hoje: {formatFocusTime(focusMinutes)} / {formatFocusTime(dailyGoal)}
+                      <p className="text-sm text-obsidian-400 mb-3">
+                        Foco hoje: {focusMinutes}m / {goalHours}h
                       </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStatusChange(activeTask.id, 'paused')}
+                          className="px-4 py-1.5 rounded-xl text-sm font-medium text-mint-400 bg-mint-500/10 border border-mint-500/30 hover:bg-mint-500/20 transition-colors touch-manipulation"
+                        >
+                          Pausar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleStatusChange(activeTask.id, 'completed')}
+                          className="px-4 py-1.5 rounded-xl text-sm font-medium text-obsidian-300 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] transition-colors touch-manipulation"
+                        >
+                          Encerrar
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -236,35 +269,17 @@ export function DashboardScreen() {
               transition={{ delay: 0.1 }}
               className="mt-4"
             >
-              <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="font-display font-semibold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                  Estatísticas do Dia
-                </h2>
-                <motion.button
-                  whileHover={{ x: 2 }}
-                  className="text-obsidian-400 flex items-center gap-1 text-sm hover:text-obsidian-300 transition-colors"
-                  onClick={() => {
-                    captureEvent('stats viewed', {
-                      focus_minutes: focusMinutes,
-                      tasks_completed: completedTasks.length,
-                      total_tasks: tasks.length,
-                      momentum,
-                    });
-                    scrollToStats();
-                  }}
-                >
-                  Ver Tudo
-                  <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              </div>
               <StatsWidget
                 stats={{
-                  focusTime: formatFocusTime(focusMinutes),
-                  focusTrend: computeGoalProgressPercent(focusMinutes, dailyGoal),
-                  tasksCompleted: `${completedTasks.length}/${tasks.length}`,
+                  focusValue: formatFocusTime(focusMinutes),
+                  focusGoalLabel: `${focusPercent}% da meta de ${goalHours}h`,
+                  focusProgress: focusPercent,
+                  tasksValue: `${completedTasks.length} / ${tasks.length}`,
+                  tasksRemainingLabel: `${remainingTasks} ${remainingTasks === 1 ? 'restante' : 'restantes'} hoje`,
+                  tasksProgress: tasksPercent,
                   momentum,
                 }}
-                onViewStats={scrollToStats}
+                onViewStats={handleViewStats}
               />
             </motion.section>
 
