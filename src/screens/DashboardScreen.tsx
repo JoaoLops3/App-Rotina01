@@ -19,6 +19,7 @@ import {
   sortByScheduledTime,
 } from '../lib/day-stats';
 import { AgendaScreen } from './AgendaScreen';
+import { loadTasks, saveTasks } from '../lib/storage';
 
 const sampleTasks: Task[] = [
   {
@@ -102,10 +103,14 @@ function getGreeting(): string {
 }
 
 export function DashboardScreen() {
-  const [tasks, setTasks] = useState<Task[]>(sampleTasks);
+  const [tasks, setTasks] = useState<Task[]>(() => loadTasks() ?? sampleTasks);
   const [momentum, setMomentum] = useState(getMomentum);
   const [activeTab, setActiveTab] = useState('home');
   const statsSectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    saveTasks(tasks);
+  }, [tasks]);
 
   const activeTask = tasks.find((t) => t.status === 'active');
   const focusSeconds = computeFocusSeconds(tasks);
