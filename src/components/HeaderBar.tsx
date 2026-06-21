@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Settings, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useHistory } from "react-router-dom";
 
 interface HeaderProps {
@@ -72,14 +72,6 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
         >
           <Bell className="w-5 h-5 text-obsidian-300" strokeWidth={1.5} />
           <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-coral-400" />
-        </motion.button>
-
-        <motion.button
-          whileHover={{ scale: 1.1, rotate: 45 }}
-          whileTap={{ scale: 0.9 }}
-          className="p-3 rounded-2xl bg-surface-secondary transition-colors hover:bg-surface-tertiary"
-        >
-          <Settings className="w-5 h-5 text-obsidian-300" strokeWidth={1.5} />
         </motion.button>
       </div>
     </motion.header>
