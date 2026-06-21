@@ -13,10 +13,10 @@
 
 **Objetivo:** o que está na tela sobrevive ao fechar o app.
 
-- [ ] Criar `src/lib/storage.ts` com `loadTasks()` / `saveTasks()` usando `localStorage`.
-- [ ] No `DashboardScreen`, inicializar o estado a partir de `loadTasks()` (com `sampleTasks` só como fallback na 1ª vez).
-- [ ] Salvar em `localStorage` sempre que `tasks` mudar (`useEffect`).
-- [ ] Persistir mudança de status (concluir/pausar/ativar).
+- [x] Criar `src/lib/storage.ts` com `loadTasks()` / `saveTasks()` usando `localStorage`.
+- [x] No `DashboardScreen`, inicializar o estado a partir de `loadTasks()` (com `sampleTasks` só como fallback na 1ª vez).
+- [x] Salvar em `localStorage` sempre que `tasks` mudar (`useEffect`).
+- [x] Persistir mudança de status (concluir/pausar/ativar).
 
 **Pronto quando:** marco uma tarefa como concluída, fecho e reabro o app → ela continua concluída.
 
@@ -28,10 +28,10 @@
 
 **Objetivo:** o usuário consegue adicionar a própria tarefa (fim do hardcoded).
 
-- [ ] Botão "+ Nova tarefa" no header ou flutuante.
-- [ ] Modal/sheet com campos: título, categoria, duração, horário (opcional).
-- [ ] Ao salvar: gera `id`, status `pending`, `elapsed: 0`, e persiste (Fase 1).
-- [ ] Evento PostHog `task created`.
+- [x] Botão "+ Nova tarefa" (botão central da tab bar).
+- [x] Modal/sheet com campos: título, categoria, duração, horário (opcional) e prioridade.
+- [x] Ao salvar: gera `id`, status `pending`, `elapsed: 0`, e persiste (Fase 1).
+- [x] Evento PostHog `task created`.
 
 **Pronto quando:** crio uma tarefa nova do zero e ela aparece + persiste.
 

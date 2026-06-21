@@ -9,6 +9,7 @@ import { TaskCard, Task, TaskStatus } from '../components/TaskCard';
 import { StatsWidget } from '../components/StatsWidget';
 import { ProgressRing } from '../components/ProgressRing';
 import { CustomTabBar } from '../components/CustomTabBar';
+import { NewTaskSheet } from '../components/NewTaskSheet';
 import { captureEvent } from '../lib/posthog';
 import {
   addMomentum,
@@ -106,6 +107,7 @@ export function DashboardScreen() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks() ?? sampleTasks);
   const [momentum, setMomentum] = useState(getMomentum);
   const [activeTab, setActiveTab] = useState('home');
+  const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
   const statsSectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -174,6 +176,18 @@ export function DashboardScreen() {
       }
     });
   }, [tasks]);
+
+  const handleCreateTask = (task: Task) => {
+    setTasks((prev) => [...prev, task]);
+    captureEvent('task created', {
+      task_id: task.id,
+      task_title: task.title,
+      task_category: task.category,
+      task_priority: task.priority,
+      task_duration_minutes: Math.floor(task.duration / 60),
+      has_scheduled_time: Boolean(task.scheduledTime),
+    });
+  };
 
   const handleStatusChange = (id: string, newStatus: TaskStatus) => {
     setTasks((prev) => {
@@ -375,7 +389,17 @@ export function DashboardScreen() {
         </div>
 
         {/* Custom Tab Bar */}
-        <CustomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+        <CustomTabBar
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          onCenterClick={() => setIsNewTaskOpen(true)}
+        />
+
+        <NewTaskSheet
+          isOpen={isNewTaskOpen}
+          onClose={() => setIsNewTaskOpen(false)}
+          onCreate={handleCreateTask}
+        />
       </IonContent>
     </IonPage>
   );
