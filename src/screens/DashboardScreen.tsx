@@ -108,7 +108,10 @@ export function DashboardScreen() {
   const [momentum, setMomentum] = useState(getMomentum);
   const [activeTab, setActiveTab] = useState('home');
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const statsSectionRef = useRef<HTMLElement>(null);
+
+  const taskToEdit = editingTaskId ? tasks.find((t) => t.id === editingTaskId) ?? null : null;
 
   useEffect(() => {
     saveTasks(tasks);
@@ -177,7 +180,19 @@ export function DashboardScreen() {
     });
   }, [tasks]);
 
-  const handleCreateTask = (task: Task) => {
+  const handleSubmitTask = (task: Task) => {
+    if (editingTaskId) {
+      setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
+      captureEvent('task edited', {
+        task_id: task.id,
+        task_title: task.title,
+        task_category: task.category,
+        task_priority: task.priority,
+        task_duration_minutes: Math.floor(task.duration / 60),
+        has_scheduled_time: Boolean(task.scheduledTime),
+      });
+      return;
+    }
     setTasks((prev) => [...prev, task]);
     captureEvent('task created', {
       task_id: task.id,
@@ -187,6 +202,35 @@ export function DashboardScreen() {
       task_duration_minutes: Math.floor(task.duration / 60),
       has_scheduled_time: Boolean(task.scheduledTime),
     });
+  };
+
+  const handleOpenNewTask = () => {
+    setEditingTaskId(null);
+    setIsNewTaskOpen(true);
+  };
+
+  const handleEditTask = (id: string) => {
+    setEditingTaskId(id);
+    setIsNewTaskOpen(true);
+  };
+
+  const handleCloseTaskSheet = () => {
+    setIsNewTaskOpen(false);
+    setEditingTaskId(null);
+  };
+
+  const handleDeleteTask = (id: string) => {
+    const target = tasks.find((t) => t.id === id);
+    completedRecordedRef.current.delete(id);
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    if (target) {
+      captureEvent('task deleted', {
+        task_id: target.id,
+        task_title: target.title,
+        task_category: target.category,
+        task_status: target.status,
+      });
+    }
   };
 
   const handleStatusChange = (id: string, newStatus: TaskStatus) => {
@@ -250,7 +294,7 @@ export function DashboardScreen() {
 
         <div className="relative z-10 min-h-screen pb-32">
           {activeTab === 'schedule' ? (
-            <AgendaScreen tasks={tasks} onStatusChange={handleStatusChange} />
+            <AgendaScreen tasks={tasks} onStatusChange={handleStatusChange} onEdit={handleEditTask} onDelete={handleDeleteTask} />
           ) : (
           <>
           <HeaderBar greeting={getGreeting()} userName="Alex" />
@@ -347,7 +391,7 @@ export function DashboardScreen() {
               </div>
               <div className="space-y-3">
                 {visibleUpcoming.map((task, index) => (
-                  <TaskCard key={task.id} task={task} index={index} onStatusChange={handleStatusChange} />
+                  <TaskCard key={task.id} task={task} index={index} onStatusChange={handleStatusChange} onEdit={handleEditTask} onDelete={handleDeleteTask} />
                 ))}
               </div>
               <button
@@ -370,7 +414,7 @@ export function DashboardScreen() {
                 </div>
                 <div className="space-y-3 opacity-60">
                   {completedTasks.map((task, index) => (
-                    <TaskCard key={task.id} task={task} index={index} onStatusChange={handleStatusChange} />
+                    <TaskCard key={task.id} task={task} index={index} onStatusChange={handleStatusChange} onEdit={handleEditTask} onDelete={handleDeleteTask} />
                   ))}
                 </div>
                 <button
@@ -392,13 +436,14 @@ export function DashboardScreen() {
         <CustomTabBar
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          onCenterClick={() => setIsNewTaskOpen(true)}
+          onCenterClick={handleOpenNewTask}
         />
 
         <NewTaskSheet
           isOpen={isNewTaskOpen}
-          onClose={() => setIsNewTaskOpen(false)}
-          onCreate={handleCreateTask}
+          onClose={handleCloseTaskSheet}
+          onSubmit={handleSubmitTask}
+          taskToEdit={taskToEdit}
         />
       </IonContent>
     </IonPage>

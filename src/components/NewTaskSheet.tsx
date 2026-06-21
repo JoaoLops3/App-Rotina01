@@ -6,7 +6,8 @@ import type { Task, TaskPriority } from './TaskCard';
 interface NewTaskSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (task: Task) => void;
+  onSubmit: (task: Task) => void;
+  taskToEdit?: Task | null;
 }
 
 const categories = ['Focus', 'Criativo', 'Saúde', 'Comunicação'] as const;
@@ -27,7 +28,8 @@ function createId(): string {
 const inputClass =
   'w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-white placeholder:text-obsidian-500 outline-none focus:border-mint-400/50 transition-colors';
 
-export function NewTaskSheet({ isOpen, onClose, onCreate }: NewTaskSheetProps) {
+export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskSheetProps) {
+  const isEditing = Boolean(taskToEdit);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<string>(categories[0]);
   const [durationMinutes, setDurationMinutes] = useState('30');
@@ -36,13 +38,21 @@ export function NewTaskSheet({ isOpen, onClose, onCreate }: NewTaskSheetProps) {
 
   useEffect(() => {
     if (isOpen) {
-      setTitle('');
-      setCategory(categories[0]);
-      setDurationMinutes('30');
-      setScheduledTime('');
-      setPriority('medium');
+      if (taskToEdit) {
+        setTitle(taskToEdit.title);
+        setCategory(taskToEdit.category);
+        setDurationMinutes(String(Math.round(taskToEdit.duration / 60)));
+        setScheduledTime(taskToEdit.scheduledTime ?? '');
+        setPriority(taskToEdit.priority);
+      } else {
+        setTitle('');
+        setCategory(categories[0]);
+        setDurationMinutes('30');
+        setScheduledTime('');
+        setPriority('medium');
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, taskToEdit]);
 
   const trimmedTitle = title.trim();
   const minutes = Number(durationMinutes);
@@ -50,17 +60,28 @@ export function NewTaskSheet({ isOpen, onClose, onCreate }: NewTaskSheetProps) {
 
   const handleSubmit = () => {
     if (!isValid) return;
-    const task: Task = {
-      id: createId(),
-      title: trimmedTitle,
-      category,
-      duration: Math.round(minutes * 60),
-      elapsed: 0,
-      status: 'pending',
-      priority,
-      scheduledTime: scheduledTime || undefined,
-    };
-    onCreate(task);
+    const duration = Math.round(minutes * 60);
+    const task: Task = taskToEdit
+      ? {
+          ...taskToEdit,
+          title: trimmedTitle,
+          category,
+          duration,
+          elapsed: Math.min(taskToEdit.elapsed, duration),
+          priority,
+          scheduledTime: scheduledTime || undefined,
+        }
+      : {
+          id: createId(),
+          title: trimmedTitle,
+          category,
+          duration,
+          elapsed: 0,
+          status: 'pending',
+          priority,
+          scheduledTime: scheduledTime || undefined,
+        };
+    onSubmit(task);
     onClose();
   };
 
@@ -93,7 +114,7 @@ export function NewTaskSheet({ isOpen, onClose, onCreate }: NewTaskSheetProps) {
 
             <div className="flex items-center justify-between mb-5">
               <h2 className="font-display font-semibold text-xl text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                Nova tarefa
+                {isEditing ? 'Editar tarefa' : 'Nova tarefa'}
               </h2>
               <button
                 type="button"
@@ -189,7 +210,7 @@ export function NewTaskSheet({ isOpen, onClose, onCreate }: NewTaskSheetProps) {
                 disabled={!isValid}
                 className="btn-primary w-full mt-2 disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation"
               >
-                Adicionar tarefa
+                {isEditing ? 'Salvar alterações' : 'Adicionar tarefa'}
               </button>
             </div>
           </motion.div>

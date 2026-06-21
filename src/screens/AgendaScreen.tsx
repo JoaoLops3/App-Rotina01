@@ -5,9 +5,11 @@ import { sortByScheduledTime } from '../lib/day-stats';
 interface AgendaScreenProps {
   tasks: Task[];
   onStatusChange: (id: string, status: TaskStatus) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function AgendaScreen({ tasks, onStatusChange }: AgendaScreenProps) {
+export function AgendaScreen({ tasks, onStatusChange, onEdit, onDelete }: AgendaScreenProps) {
   const activeTasks = tasks.filter((t) => t.status === 'active' || t.status === 'paused');
   const upcomingTasks = sortByScheduledTime(tasks.filter((t) => t.status === 'pending'));
   const completedTasks = tasks.filter((t) => t.status === 'completed');
@@ -39,7 +41,7 @@ export function AgendaScreen({ tasks, onStatusChange }: AgendaScreenProps) {
           </div>
           <div className="space-y-3">
             {activeTasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} isActive={task.status === 'active'} onStatusChange={onStatusChange} />
+              <TaskCard key={task.id} task={task} index={index} isActive={task.status === 'active'} onStatusChange={onStatusChange} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </div>
         </motion.section>
@@ -55,7 +57,7 @@ export function AgendaScreen({ tasks, onStatusChange }: AgendaScreenProps) {
         {upcomingTasks.length > 0 ? (
           <div className="space-y-3">
             {upcomingTasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} onStatusChange={onStatusChange} />
+              <TaskCard key={task.id} task={task} index={index} onStatusChange={onStatusChange} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </div>
         ) : (
@@ -73,7 +75,7 @@ export function AgendaScreen({ tasks, onStatusChange }: AgendaScreenProps) {
           </div>
           <div className="space-y-3 opacity-60">
             {completedTasks.map((task, index) => (
-              <TaskCard key={task.id} task={task} index={index} onStatusChange={onStatusChange} />
+              <TaskCard key={task.id} task={task} index={index} onStatusChange={onStatusChange} onEdit={onEdit} onDelete={onDelete} />
             ))}
           </div>
         </motion.section>

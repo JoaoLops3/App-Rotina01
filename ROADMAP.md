@@ -43,9 +43,9 @@
 
 **Objetivo:** o menu `MoreVertical` (hoje decorativo) passa a funcionar.
 
-- [ ] Ação de excluir tarefa (com confirmação).
-- [ ] Ação de editar (reaproveita o sheet da Fase 2).
-- [ ] Persistir as mudanças.
+- [x] Ação de excluir tarefa (com confirmação).
+- [x] Ação de editar (reaproveita o sheet da Fase 2).
+- [x] Persistir as mudanças.
 
 **Pronto quando:** consigo editar e apagar qualquer tarefa, e some/atualiza ao reabrir.
 

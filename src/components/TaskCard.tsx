@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
-import { Check, Clock, MoreVertical, RotateCcw, Zap } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, Clock, MoreVertical, Pencil, RotateCcw, Trash2, Zap } from 'lucide-react';
 import { captureEvent } from '../lib/posthog';
 
 export type TaskStatus = 'active' | 'pending' | 'paused' | 'completed';
@@ -21,6 +22,8 @@ interface TaskCardProps {
   index: number;
   isActive?: boolean;
   onStatusChange?: (id: string, status: TaskStatus) => void;
+  onEdit?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 const categoryColors: Record<string, string> = {
@@ -31,9 +34,30 @@ const categoryColors: Record<string, string> = {
   'Default': 'bg-obsidian-500/20 text-obsidian-300',
 };
 
-export function TaskCard({ task, index, isActive = false, onStatusChange }: TaskCardProps) {
+export function TaskCard({ task, index, isActive = false, onStatusChange, onEdit, onDelete }: TaskCardProps) {
   const progress = (task.elapsed / task.duration) * 100;
   const remainingTime = task.duration - task.elapsed;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const hasMenu = Boolean(onEdit || onDelete);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+        setConfirmingDelete(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [menuOpen]);
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+    setConfirmingDelete(false);
+  };
 
   return (
     <motion.div
@@ -44,28 +68,27 @@ export function TaskCard({ task, index, isActive = false, onStatusChange }: Task
         delay: index * 0.08,
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
-      className={`relative overflow-hidden ${isActive ? 'card-glass' : 'card-premium'} p-5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] touch-manipulation`}
+      className={`relative ${isActive ? 'card-glass' : 'card-premium'} p-5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] touch-manipulation`}
     >
       {isActive && (
-        <motion.div
-          initial={{ scaleY: 0 }}
-          animate={{ scaleY: 1 }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-mint-400 to-mint-500 origin-top"
-          style={{ boxShadow: '0 0 20px rgba(52, 211, 153, 0.5)' }}
-        />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+          <motion.div
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-mint-400 to-mint-500 origin-top"
+            style={{ boxShadow: '0 0 20px rgba(52, 211, 153, 0.5)' }}
+          />
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: progress / 100 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-mint-500/60 to-mint-400/60 origin-left"
+          />
+        </div>
       )}
 
-      {isActive && (
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: progress / 100 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-mint-500/60 to-mint-400/60 origin-left"
-        />
-      )}
-
-      <div className="flex items-start gap-4">
+      <div className="relative flex items-start gap-4">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => {
@@ -143,9 +166,75 @@ export function TaskCard({ task, index, isActive = false, onStatusChange }: Task
           )}
         </div>
 
-        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="p-2 text-obsidian-500 hover:text-obsidian-300 transition-colors">
-          <MoreVertical className="w-5 h-5" strokeWidth={1.5} />
-        </motion.button>
+        {hasMenu && (
+          <div className="relative" ref={menuRef}>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setMenuOpen((open) => !open)}
+              className="p-2 text-obsidian-500 hover:text-obsidian-300 transition-colors touch-manipulation"
+              aria-label="Opções da tarefa"
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+            >
+              <MoreVertical className="w-5 h-5" strokeWidth={1.5} />
+            </motion.button>
+
+            <AnimatePresence>
+              {menuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  role="menu"
+                  className="absolute right-0 top-full z-30 mt-1 w-44 origin-top-right overflow-hidden rounded-2xl border border-white/10 bg-surface-elevated/95 backdrop-blur-xl shadow-xl"
+                >
+                  {onEdit && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        closeMenu();
+                        onEdit(task.id);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-obsidian-200 hover:bg-white/[0.06] transition-colors touch-manipulation"
+                    >
+                      <Pencil className="w-4 h-4" strokeWidth={2} />
+                      Editar
+                    </button>
+                  )}
+                  {onDelete && (
+                    confirmingDelete ? (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          closeMenu();
+                          onDelete(task.id);
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm font-semibold text-coral-400 bg-coral-500/10 hover:bg-coral-500/20 transition-colors touch-manipulation"
+                      >
+                        <Trash2 className="w-4 h-4" strokeWidth={2} />
+                        Confirmar exclusão
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => setConfirmingDelete(true)}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-sm font-medium text-coral-400 hover:bg-white/[0.06] transition-colors touch-manipulation"
+                      >
+                        <Trash2 className="w-4 h-4" strokeWidth={2} />
+                        Excluir
+                      </button>
+                    )
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </motion.div>
   );
