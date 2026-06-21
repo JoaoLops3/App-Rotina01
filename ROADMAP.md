@@ -86,9 +86,9 @@
 
 **Objetivo:** a tab bar deixa de ser decorativa.
 
-- [ ] Finalizar a `AgendaScreen` (hoje vazia) — visão por horário/dia.
-- [ ] Adicionar rotas reais no `App.tsx` (além de `/`).
-- [ ] Conectar a `CustomTabBar` à navegação.
+- [x] Finalizar a `AgendaScreen` (hoje vazia) — visão por horário/dia.
+- [x] Adicionar rotas reais no `App.tsx` (além de `/`).
+- [x] Conectar a `CustomTabBar` à navegação.
 
 **Pronto quando:** troco de aba e vejo telas diferentes de verdade.
 

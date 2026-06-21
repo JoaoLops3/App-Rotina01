@@ -83,6 +83,7 @@ export function TaskCard({
         delay: index * 0.08,
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
+      style={menuOpen ? { zIndex: 40 } : undefined}
       className={`relative ${isActive ? "card-glass" : "card-premium"} p-5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] touch-manipulation`}
     >
       {isActive && (

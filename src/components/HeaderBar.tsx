@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion';
-import { Settings, Bell } from 'lucide-react';
+import { motion } from "framer-motion";
+import { Settings, Bell } from "lucide-react";
+import { useHistory } from "react-router-dom";
 
 interface HeaderProps {
   greeting: string;
@@ -8,6 +9,8 @@ interface HeaderProps {
 }
 
 export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
+  const history = useHistory();
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -16,24 +19,37 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
       className="flex items-center justify-between px-4 pt-12 pb-2"
     >
       <div className="flex items-center gap-3">
-        <motion.div
+        <motion.button
+          type="button"
+          onClick={() => history.push("/perfil")}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative"
+          className="relative touch-manipulation"
+          aria-label="Abrir perfil"
         >
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5" style={{ boxShadow: '0 0 20px rgba(52, 211, 153, 0.2)' }}>
+          <div
+            className="w-11 h-11 rounded-2xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5"
+            style={{ boxShadow: "0 0 20px rgba(52, 211, 153, 0.2)" }}
+          >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={userName} className="w-full h-full rounded-[14px] object-cover" />
+              <img
+                src={avatarUrl}
+                alt={userName}
+                className="w-full h-full rounded-[14px] object-cover"
+              />
             ) : (
               <div className="w-full h-full rounded-[14px] bg-surface-primary flex items-center justify-center">
-                <span className="font-display font-bold text-lg text-white" style={{ fontFamily: 'Space Grotesk' }}>
+                <span
+                  className="font-display font-bold text-lg text-white"
+                  style={{ fontFamily: "Space Grotesk" }}
+                >
                   {userName.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
           </div>
           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-mint-400 border-[2px] border-surface-primary" />
-        </motion.div>
+        </motion.button>
 
         <div className="flex flex-col justify-center gap-0.5 pt-0.5">
           <p className="m-0 text-xs text-obsidian-500 font-medium tracking-wide uppercase leading-none">
@@ -41,7 +57,7 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
           </p>
           <h1
             className="m-0 font-display font-semibold text-lg text-white tracking-tight leading-tight"
-            style={{ fontFamily: 'Space Grotesk' }}
+            style={{ fontFamily: "Space Grotesk" }}
           >
             {userName}
           </h1>
