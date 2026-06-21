@@ -25,9 +25,14 @@ dist-ssr
 
 # Cursor / Claude (planos e configs locais — não publicar)
 .cursor/
+.cursor/plans/
 .cursor/**
 **/.cursor/plans/
 *.plan.md
 
 # PostHog wizard (skills locais do agente)
 .claude/
+
+# Capacitor — projetos nativos gerados localmente (npx cap sync)
+android/
+ios/
