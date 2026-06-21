@@ -1,15 +1,76 @@
 import { motion } from "framer-motion";
 import { IonPage, IonContent } from "@ionic/react";
-import { Bell, Settings } from "lucide-react";
+import {
+  Bell,
+  Settings,
+  Lock,
+  Download,
+  Trash2,
+  LogOut,
+  Flame,
+  ChevronRight,
+  type LucideIcon,
+} from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
+import { useTasks } from "../lib/tasks-context";
 
 const USER_NAME = "Alex";
 
+interface SettingsRowProps {
+  icon: LucideIcon;
+  label: string;
+  onClick?: () => void;
+  danger?: boolean;
+}
+
+function SettingsRow({
+  icon: Icon,
+  label,
+  onClick,
+  danger = false,
+}: SettingsRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.04] transition-colors touch-manipulation"
+    >
+      <Icon
+        className={`w-5 h-5 ${danger ? "text-coral-500" : "text-obsidian-300"}`}
+        strokeWidth={1.5}
+      />
+      <span
+        className={`flex-1 text-sm font-medium ${danger ? "text-coral-500" : "text-obsidian-200"}`}
+      >
+        {label}
+      </span>
+      <ChevronRight className="w-4 h-4 text-obsidian-500" strokeWidth={1.5} />
+    </button>
+  );
+}
+
+function SectionLabel({
+  children,
+  danger = false,
+}: {
+  children: string;
+  danger?: boolean;
+}) {
+  return (
+    <p
+      className={`mb-2 px-1 text-xs font-medium uppercase tracking-wide ${
+        danger ? "text-coral-500" : "text-obsidian-500"
+      }`}
+    >
+      {children}
+    </p>
+  );
+}
+
 export function ProfileScreen() {
-  const settingsRows = [
-    { icon: Bell, label: "Notificações" },
-    { icon: Settings, label: "Preferências" },
-  ];
+  const { streak } = useTasks();
+
+  const noop = () => {};
 
   return (
     <IonPage>
@@ -44,34 +105,69 @@ export function ProfileScreen() {
                 {USER_NAME}
               </h1>
               <p className="text-obsidian-500 text-sm mt-1">
-                Construindo uma rotina melhor, um dia de cada vez.
+                Construindo uma rotina melhor,
+                <br />
+                um dia de cada vez.
               </p>
+              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">
+                <Flame className="w-3.5 h-3.5 text-coral-400" strokeWidth={2} />
+                <span className="text-xs font-medium text-obsidian-200">
+                  {streak} {streak === 1 ? "dia" : "dias"} de sequência
+                </span>
+              </div>
             </motion.div>
 
             <motion.section
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.05 }}
-              className="card-glass divide-y divide-white/5 overflow-hidden"
             >
-              {settingsRows.map((row) => {
-                const Icon = row.icon;
-                return (
-                  <button
-                    key={row.label}
-                    type="button"
-                    className="flex w-full items-center gap-3 px-5 py-4 text-left hover:bg-white/[0.04] transition-colors touch-manipulation"
-                  >
-                    <Icon
-                      className="w-5 h-5 text-obsidian-300"
-                      strokeWidth={1.5}
-                    />
-                    <span className="text-obsidian-200 text-sm font-medium">
-                      {row.label}
-                    </span>
-                  </button>
-                );
-              })}
+              <SectionLabel>Preferências</SectionLabel>
+              <div className="card-glass divide-y divide-white/5 overflow-hidden">
+                <SettingsRow icon={Bell} label="Notificações" onClick={noop} />
+                <SettingsRow
+                  icon={Settings}
+                  label="Preferências"
+                  onClick={noop}
+                />
+              </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <SectionLabel>Conta</SectionLabel>
+              <div className="card-glass divide-y divide-white/5 overflow-hidden">
+                <SettingsRow icon={Lock} label="Trocar senha" onClick={noop} />
+                <SettingsRow
+                  icon={Download}
+                  label="Exportar meus dados"
+                  onClick={noop}
+                />
+                <SettingsRow
+                  icon={Trash2}
+                  label="Excluir conta"
+                  danger
+                  onClick={noop}
+                />
+              </div>
+            </motion.section>
+
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <button
+                type="button"
+                onClick={noop}
+                className="flex w-full items-center justify-center gap-2 px-5 py-4 rounded-3xl border border-white/10 text-obsidian-200 text-sm font-medium hover:bg-white/[0.04] transition-colors touch-manipulation"
+              >
+                <LogOut className="w-4 h-4" strokeWidth={1.5} />
+                Sair
+              </button>
             </motion.section>
           </div>
         </div>
