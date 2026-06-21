@@ -8,7 +8,8 @@ export interface StatsWidgetData {
   tasksValue: string;
   tasksRemainingLabel: string;
   tasksProgress: number;
-  momentum: number;
+  streakValue: string;
+  streakLabel: string;
 }
 
 interface StatsWidgetProps {
@@ -103,15 +104,15 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-obsidian-500 text-[10px] font-medium uppercase tracking-wider leading-tight truncate">
-              Momentum
+              Sequência
             </p>
             <p className="font-display font-bold text-2xl text-white leading-tight" style={{ fontFamily: 'Space Grotesk' }}>
-              {stats.momentum} pts
+              {stats.streakValue}
             </p>
           </div>
         </div>
         <p className="text-obsidian-500 text-xs leading-relaxed mt-3">
-          Complete 3 tarefas seguidas para acumular momentum. Cada sessão de foco vale +10 pts.
+          {stats.streakLabel}
         </p>
       </motion.button>
     </div>

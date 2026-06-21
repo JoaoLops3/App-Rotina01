@@ -57,10 +57,10 @@
 
 **Objetivo:** acabar com a confusão min × segundos.
 
-- [ ] Definir 1 unidade canônica para `duration`/`elapsed` (sugestão: **segundos**).
-- [ ] Ajustar exibição ("min restantes", "X min") para converter corretamente.
-- [ ] Revisar o `setInterval` do timer (tick de 1s coerente com a unidade).
-- [ ] Conferir `ProgressRing` e `TaskCard` (cálculo de progresso).
+- [x] Definir 1 unidade canônica para `duration`/`elapsed` (sugestão: **segundos**).
+- [x] Ajustar exibição ("min restantes", "X min") para converter corretamente.
+- [x] Revisar o `setInterval` do timer (tick de 1s coerente com a unidade).
+- [x] Conferir `ProgressRing` e `TaskCard` (cálculo de progresso).
 
 **Pronto quando:** uma tarefa de "25 min" realmente leva 25 min no timer e mostra os números certos.
 
@@ -72,9 +72,9 @@
 
 **Objetivo:** parar de mentir. Hoje `streak: 12`, `+23%`, `87%` são chumbados.
 
-- [ ] Calcular `tasksCompleted`, `focusTime` a partir das tarefas reais.
-- [ ] Streak/eficiência: ou calcular de verdade, ou remover até existir histórico.
-- [ ] Guardar histórico diário em `localStorage` para alimentar tendências.
+- [x] Calcular `tasksCompleted`, `focusTime` a partir das tarefas reais.
+- [x] Streak/eficiência: ou calcular de verdade, ou remover até existir histórico.
+- [x] Guardar histórico diário em `localStorage` para alimentar tendências.
 
 **Pronto quando:** os números do `StatsWidget` batem com o que eu realmente fiz no dia.
 

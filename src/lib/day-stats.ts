@@ -1,18 +1,75 @@
 import type { Task } from '../components/TaskCard';
 
-const MOMENTUM_KEY = 'app_rotina_momentum';
+const HISTORY_KEY = 'app-rotina:history';
+const HISTORY_MAX_DAYS = 90;
 
-export function getMomentum(): number {
-  const stored = localStorage.getItem(MOMENTUM_KEY);
-  if (!stored) return 0;
-  const parsed = Number.parseInt(stored, 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
+/** Estatísticas consolidadas de um dia (datas em horário local, formato YYYY-MM-DD). */
+export interface DayStat {
+  date: string;
+  tasksCompleted: number;
+  focusSeconds: number;
 }
 
-export function addMomentum(amount = 1): number {
-  const next = getMomentum() + amount;
-  localStorage.setItem(MOMENTUM_KEY, String(next));
-  return next;
+/** Chave de dia (YYYY-MM-DD) em horário local. */
+export function dayKey(date: Date = new Date()): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function loadHistory(): DayStat[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed as DayStat[];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(history: DayStat[]): void {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+  } catch {
+    // Storage indisponível: ignora silenciosamente.
+  }
+}
+
+/** Registra (upsert) o snapshot do dia atual e retorna o histórico atualizado. */
+export function recordToday(stat: { tasksCompleted: number; focusSeconds: number }): DayStat[] {
+  const date = dayKey();
+  const history = loadHistory();
+  const entry: DayStat = { date, ...stat };
+  const index = history.findIndex((d) => d.date === date);
+  if (index >= 0) {
+    history[index] = entry;
+  } else {
+    history.push(entry);
+  }
+  const trimmed = history.slice(-HISTORY_MAX_DAYS);
+  saveHistory(trimmed);
+  return trimmed;
+}
+
+/** Conta dias consecutivos (terminando hoje) com pelo menos uma tarefa concluída. */
+export function computeStreak(history: DayStat[], today: string = dayKey()): number {
+  const completedDays = new Set(
+    history.filter((d) => d.tasksCompleted > 0).map((d) => d.date)
+  );
+  const cursor = new Date(`${today}T00:00:00`);
+  // Se hoje ainda não tem conclusão, não quebra a sequência: conta a partir de ontem.
+  if (!completedDays.has(dayKey(cursor))) {
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  let streak = 0;
+  while (completedDays.has(dayKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
 }
 
 export function sortByScheduledTime(tasks: Task[]): Task[] {
