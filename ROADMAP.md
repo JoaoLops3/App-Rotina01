@@ -100,17 +100,17 @@
 
 **Objetivo:** central de alertas dentro do app, com histórico e badge no sino.
 
-- [ ] Rota `/notificacoes` + `NotificationsScreen` (inbox agrupada Hoje/Ontem/Anteriores)
-- [ ] Tipos: `task_upcoming` (~10 min antes), `task_completed`, `daily_goal_reached`, `streak_milestone`, `streak_at_risk`
-- [ ] Persistência em `localStorage` (`app-rotina:notifications`) com `dedupKey`
-- [ ] Polling 60s para lembretes de tarefas agendadas (app aberto)
-- [ ] Sino no `HeaderBar` → navega + badge coral só com não lidas
-- [ ] Perfil → linha Notificações → mesma tela
+- [x] Rota `/notificacoes` + `NotificationsScreen` (inbox agrupada Hoje/Ontem/Anteriores)
+- [x] Tipos: `task_upcoming` (~10 min antes), `task_completed`, `daily_goal_reached`, `streak_milestone`, `streak_at_risk`
+- [x] Persistência em `localStorage` (`app-rotina:notifications`) com `dedupKey`
+- [x] Polling 60s para lembretes de tarefas agendadas (app aberto)
+- [x] Sino no `HeaderBar` → navega + badge coral só com não lidas
+- [x] Perfil → linha Notificações → mesma tela
 
 **Pronto quando:** concluo tarefa, bato meta ou chega horário agendado → alerta aparece na central, persiste ao reabrir, sino mostra não lidas.
 
 **Plano:** `.cursor/plans/página_notificações_b4ce06b2.plan.md`  
-**Branch:** `feat/notificacoes`
+**Branch:** `feat/notificacoes` (mergeado na `main` via PR #6)
 
 ---
 
