@@ -9,9 +9,11 @@ import { DashboardScreen } from "./screens/DashboardScreen";
 import { AgendaScreen } from "./screens/AgendaScreen";
 import { StatsScreen } from "./screens/StatsScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
+import { NotificationsScreen } from "./screens/NotificationsScreen";
 import { CustomTabBar } from "./components/CustomTabBar";
 import { NewTaskSheet } from "./components/NewTaskSheet";
 import { TasksProvider, useTasks } from "./lib/tasks-context";
+import { NotificationsProvider } from "./lib/notifications-context";
 import { posthog } from "./lib/posthog";
 
 setupIonicReact({
@@ -69,18 +71,25 @@ function App() {
   return (
     <IonApp>
       <TasksProvider>
-        <IonReactRouter>
-          <IonRouterOutlet animated={false}>
-            <Switch>
-              <Route exact path="/" component={DashboardScreen} />
-              <Route exact path="/agenda" component={AgendaScreen} />
-              <Route exact path="/stats" component={StatsScreen} />
-              <Route exact path="/perfil" component={ProfileScreen} />
-            </Switch>
-          </IonRouterOutlet>
-          <CustomTabBar />
-          <GlobalTaskSheet />
-        </IonReactRouter>
+        <NotificationsProvider>
+          <IonReactRouter>
+            <IonRouterOutlet animated={false}>
+              <Switch>
+                <Route exact path="/" component={DashboardScreen} />
+                <Route exact path="/agenda" component={AgendaScreen} />
+                <Route exact path="/stats" component={StatsScreen} />
+                <Route exact path="/perfil" component={ProfileScreen} />
+                <Route
+                  exact
+                  path="/notificacoes"
+                  component={NotificationsScreen}
+                />
+              </Switch>
+            </IonRouterOutlet>
+            <CustomTabBar />
+            <GlobalTaskSheet />
+          </IonReactRouter>
+        </NotificationsProvider>
       </TasksProvider>
     </IonApp>
   );
