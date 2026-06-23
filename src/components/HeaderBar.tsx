@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { useHistory } from "react-router-dom";
+import { useNotifications } from "../lib/notifications-context";
 
 interface HeaderProps {
   greeting: string;
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
   const history = useHistory();
+  const { unreadCount } = useNotifications();
 
   return (
     <motion.header
@@ -66,12 +68,17 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
 
       <div className="flex items-center gap-2">
         <motion.button
+          type="button"
+          onClick={() => history.push("/notificacoes")}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="relative p-3 rounded-2xl bg-surface-secondary transition-colors hover:bg-surface-tertiary"
+          aria-label="Abrir notificações"
         >
           <Bell className="w-5 h-5 text-obsidian-300" strokeWidth={1.5} />
-          <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-coral-400" />
+          {unreadCount > 0 && (
+            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-coral-400" />
+          )}
         </motion.button>
       </div>
     </motion.header>

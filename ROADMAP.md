@@ -70,7 +70,7 @@
 
 ## Fase 5 — Estatísticas reais
 
-**Objetivo:** parar de mentir. Hoje `streak: 12`, `+23%`, `87%` são chumbados.
+**Objetivo:** Hoje `streak: 12`, `+23%`, `87%` são chumbados.
 
 - [x] Calcular `tasksCompleted`, `focusTime` a partir das tarefas reais.
 - [x] Streak/eficiência: ou calcular de verdade, ou remover até existir histórico.
@@ -96,17 +96,58 @@
 
 ---
 
-## Fase 7 — (Futuro) Sync com Supabase + login
+## Fase 7 — Notificações in-app (MVP)
 
-> Só depois que o loop local estiver sólido e em uso.
+**Objetivo:** central de alertas dentro do app, com histórico e badge no sino.
 
-- [ ] Auth (login).
-- [ ] Migrar persistência de `localStorage` para Supabase.
-- [ ] Sync entre dispositivos.
+- [ ] Rota `/notificacoes` + `NotificationsScreen` (inbox agrupada Hoje/Ontem/Anteriores)
+- [ ] Tipos: `task_upcoming` (~10 min antes), `task_completed`, `daily_goal_reached`, `streak_milestone`, `streak_at_risk`
+- [ ] Persistência em `localStorage` (`app-rotina:notifications`) com `dedupKey`
+- [ ] Polling 60s para lembretes de tarefas agendadas (app aberto)
+- [ ] Sino no `HeaderBar` → navega + badge coral só com não lidas
+- [ ] Perfil → linha Notificações → mesma tela
+
+**Pronto quando:** concluo tarefa, bato meta ou chega horário agendado → alerta aparece na central, persiste ao reabrir, sino mostra não lidas.
+
+**Plano:** `.cursor/plans/página_notificações_b4ce06b2.plan.md`  
+**Branch:** `feat/notificacoes`
 
 ---
 
-## Fase 8 — (Futuro) Rotina adaptativa
+## Fase 8 — Notificações mobile + UX
+
+**Objetivo:** alertas funcionam com app fechado e experiência polida.
+
+### Crítico para mobile real
+
+- [ ] `@capacitor/local-notifications` — push com app fechado (ex.: lembrete às 14:50)
+- [ ] Permissão do sistema (iOS/Android) para notificações fora do app
+- [ ] Agendamento nativo ao criar/editar tarefa com horário; cancelar ao concluir/excluir
+
+### Importante para UX
+
+- [ ] Preferências — ligar/desligar por tipo; lead time configurável (5 / 10 / 15 min)
+- [ ] Toque na notificação → deep link (tarefa no Dashboard ou Agenda)
+- [ ] Tipo `task_overdue` — passou horário e tarefa ainda `pending`
+- [ ] Tipo `timer_finished` — duração da tarefa ativa esgotou
+
+**Pronto quando:** agendo tarefa às 15h, fecho o app, e às 14:50 recebo alerta nativo no celular.
+
+---
+
+## Fase 9 — (Futuro) Sync com Supabase + login
+
+> Só depois que o loop local e notificações in-app estiverem sólidos.
+
+- [ ] Auth (login).
+- [ ] Migrar persistência de `localStorage` para Supabase.
+- [ ] Sync entre dispositivos (tarefas, histórico, perfil).
+- [ ] **Sync de notificações entre dispositivos** (inbox unificada na nuvem).
+- [ ] **Notificações remotas (servidor)** — push via backend/Supabase Edge Functions.
+
+---
+
+## Fase 10 — (Futuro) Rotina adaptativa
 
 > O ganho 10x — só faz sentido com dados reais de uso (PostHog + Supabase).
 

@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { IonPage, IonContent } from "@ionic/react";
+import { useHistory } from "react-router-dom";
 import {
   Bell,
   Settings,
@@ -69,6 +70,7 @@ function SectionLabel({
 
 export function ProfileScreen() {
   const { streak } = useTasks();
+  const history = useHistory();
 
   const noop = () => {};
 
@@ -124,7 +126,11 @@ export function ProfileScreen() {
             >
               <SectionLabel>Preferências</SectionLabel>
               <div className="card-glass divide-y divide-white/5 overflow-hidden">
-                <SettingsRow icon={Bell} label="Notificações" onClick={noop} />
+                <SettingsRow
+                  icon={Bell}
+                  label="Notificações"
+                  onClick={() => history.push("/notificacoes")}
+                />
                 <SettingsRow
                   icon={Settings}
                   label="Preferências"
