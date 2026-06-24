@@ -32,3 +32,6 @@ dist-ssr
 
 # PostHog wizard (skills locais do agente)
 .claude/
+
+# Capacitor — Android gerado localmente (foco atual: iOS)
+android/
