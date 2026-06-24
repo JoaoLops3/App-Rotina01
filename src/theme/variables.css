@@ -123,6 +123,15 @@
 }
 
 /* Override Ionic components */
+ion-app {
+  height: 100%;
+  background-color: #0d0d12;
+}
+
+ion-page {
+  background-color: #0d0d12;
+}
+
 ion-content {
   --background: #0d0d12;
   --color: #f7f7f8;

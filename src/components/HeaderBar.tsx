@@ -18,7 +18,7 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="flex items-center justify-between px-4 pt-12 pb-2"
+      className="flex items-center justify-between px-4 pt-safe pb-2"
     >
       <div className="flex items-center gap-3">
         <motion.button

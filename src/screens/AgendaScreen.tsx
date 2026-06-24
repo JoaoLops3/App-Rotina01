@@ -19,8 +19,8 @@ export function AgendaScreen() {
       <IonContent scrollY={true} className="ion-content-custom">
         <OrbBackground />
 
-        <div className="relative z-10 min-h-screen pb-32">
-          <div className="px-4 pt-12 pb-2 space-y-6">
+        <div className="relative z-10 min-h-screen pb-32 md:mx-auto md:max-w-xl">
+          <div className="px-4 pt-safe pb-2 space-y-6">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}

@@ -98,9 +98,9 @@ export function CustomTabBar() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 }}
       className="fixed bottom-0 left-0 right-0 z-50"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.5rem)" }}
     >
-      <div className="mx-4 mb-4">
+      <div className="mx-4 md:mx-auto md:max-w-xl">
         <div
           className="rounded-3xl shadow-lg px-2 py-2"
           style={{
