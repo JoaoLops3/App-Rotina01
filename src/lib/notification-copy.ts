@@ -52,8 +52,8 @@ export function buildTaskOverdueCopy(task: Task): NotificationCopy {
 
 export function buildTimerFinishedCopy(task: Task): NotificationCopy {
   return {
-    title: "Timer finalizado",
-    body: `Tempo esgotado em ${task.title}.`,
+    title: "Tarefa concluída",
+    body: `Você concluiu ${task.title}. Bom trabalho!`,
   };
 }
 

@@ -20,5 +20,8 @@ export function getNotificationNavigationTarget(
   ) {
     return { pathname: "/", search: `?highlightTask=${taskId}` };
   }
+  if (type === "streak_at_risk") {
+    return { pathname: "/" };
+  }
   return { pathname: "/" };
 }

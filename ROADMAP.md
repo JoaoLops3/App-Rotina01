@@ -150,22 +150,22 @@
 
 ### Visual / identidade
 
-- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo App Rotina (asset no Xcode / `AppIcon`)
-- [ ] **Ícone do push no Android** — `smallIcon` em `res/drawable` + `capacitor.config.ts` (quando pasta `android/` voltar ao repo)
+- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo App Rotina (asset no Xcode / `AppIcon`) — *adiado*
+- [ ] **Ícone do push no Android** — `smallIcon` em `res/drawable` + `capacitor.config.ts` (quando pasta `android/` voltar ao repo) — *adiado*
 
 ### Push nativo — tipos que hoje são só in-app
 
-- [ ] **`task_completed`** — push ao concluir tarefa com app em background (ou unificar copy: `timer_finished` → "Tarefa concluída" quando timer acaba)
-- [ ] **`streak_at_risk`** — agendar push nativo às 20h local (1x/dia, se streak > 0 e 0 conclusões)
-- [ ] **`daily_goal_reached`** — push ao bater meta (difícil sem background; avaliar disparo ao reabrir app ou via servidor na Fase 9)
-- [ ] **`streak_milestone`** — push ao atingir 3, 7, 14, 30 dias (evento; pode ser só in-app até Fase 9)
+- [x] **`task_completed`** — copy unificada via `timer_finished` → "Tarefa concluída" quando timer acaba; dedup na inbox evita duplicata ao reabrir
+- [x] **`streak_at_risk`** — agendar push nativo às 20h local (1x/dia, se streak > 0 e 0 conclusões)
+- [ ] **`daily_goal_reached`** — push ao bater meta (adiado — Fase 9 ou disparo ao reabrir)
+- [ ] **`streak_milestone`** — push ao atingir 3, 7, 14, 30 dias (adiado — in-app até Fase 9)
 
 ### Validação
 
-- [ ] Testar fluxo completo no **iOS** (foco atual — permissão, agendamento, deep link, sync inbox)
-- [ ] Limpar notificações entregues do centro do sistema após sync na inbox (opcional — `removeDeliveredNotifications`)
+- [ ] Testar fluxo completo no **iOS** (foco atual — permissão, agendamento, deep link, sync inbox, streak 20h)
+- [x] Limpar notificações entregues do centro do sistema após sync na inbox (`removeDeliveredNotifications`)
 
-**Pronto quando:** push no celular mostra ícone do app; usuário entende conclusão de tarefa sem abrir o app; streak em risco avisa à noite com app fechado.
+**Pronto quando:** ~~push no celular mostra ícone do app;~~ usuário entende conclusão de tarefa sem abrir o app; streak em risco avisa à noite com app fechado. *(ícone do app ainda pendente)*
 
 ---
 

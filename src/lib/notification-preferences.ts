@@ -24,6 +24,7 @@ export const PUSH_NOTIFICATION_TYPES: NotificationType[] = [
   "task_upcoming",
   "task_overdue",
   "timer_finished",
+  "streak_at_risk",
 ];
 
 /** Tipos que aparecem na central in-app (com app aberto). */
@@ -31,7 +32,6 @@ export const INBOX_NOTIFICATION_TYPES: NotificationType[] = [
   "task_completed",
   "daily_goal_reached",
   "streak_milestone",
-  "streak_at_risk",
 ];
 
 export const DEFAULT_PREFERENCES: NotificationPreferences = {

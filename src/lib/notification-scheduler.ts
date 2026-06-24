@@ -58,3 +58,21 @@ export function getTimerFinishAt(
   if (remainingSeconds <= 0) return null;
   return new Date(now.getTime() + remainingSeconds * 1000);
 }
+
+const STREAK_RISK_HOUR = 20;
+
+export function getStreakAtRiskScheduleAt(
+  streak: number,
+  completedToday: number,
+  now: Date = new Date(),
+): Date | null {
+  if (streak <= 0 || completedToday > 0) return null;
+
+  const scheduleAt = new Date(now);
+  scheduleAt.setHours(STREAK_RISK_HOUR, 0, 0, 0);
+
+  const minScheduleMs = now.getTime() + 5_000;
+  if (scheduleAt.getTime() < minScheduleMs) return null;
+
+  return scheduleAt;
+}

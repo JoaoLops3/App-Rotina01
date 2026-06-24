@@ -9,21 +9,30 @@ import {
   allNativeIdsForTask,
   isTimerFinishedNotificationId,
   nativeNotificationId,
+  nativeStreakAtRiskNotificationId,
+  NATIVE_NOTIFICATION_ID_MAX,
 } from "./notification-native-ids";
 import type { NotificationPreferences } from "./notification-preferences";
 import { loadPreferences } from "./notification-preferences";
 import {
+  buildStreakAtRiskCopy,
   buildTaskOverdueCopy,
   buildTaskUpcomingCopy,
   buildTimerFinishedCopy,
   extraToInboxEntry,
   parseNativeNotificationExtra,
+  streakAtRiskDedupKey,
   taskOverdueDedupKey,
   taskUpcomingDedupKey,
   timerFinishedDedupKey,
 } from "./notification-copy";
 import type { NewNotification } from "./notification-storage";
-import { getTimerFinishAt, scheduledDateToday } from "./notification-scheduler";
+import { computeStreak, dayKey, loadHistory } from "./day-stats";
+import {
+  getStreakAtRiskScheduleAt,
+  getTimerFinishAt,
+  scheduledDateToday,
+} from "./notification-scheduler";
 
 export type NotificationPermissionState =
   | "granted"
@@ -38,7 +47,7 @@ interface NativeNotificationPayload {
   scheduleAt: Date;
   extra: {
     type: NotificationType;
-    taskId: string;
+    taskId?: string;
     dedupKey: string;
     title: string;
     body: string;
@@ -179,6 +188,27 @@ function buildNativePayloads(
     }
   }
 
+  if (prefs.enabled.streak_at_risk) {
+    const streak = computeStreak(loadHistory(), dayKey(now));
+    const completedToday = tasks.filter((t) => t.status === "completed").length;
+    const scheduleAt = getStreakAtRiskScheduleAt(streak, completedToday, now);
+    if (scheduleAt) {
+      const copy = buildStreakAtRiskCopy(streak);
+      payloads.push({
+        id: nativeStreakAtRiskNotificationId(now),
+        title: copy.title,
+        body: copy.body,
+        scheduleAt,
+        extra: {
+          type: "streak_at_risk",
+          dedupKey: streakAtRiskDedupKey(now),
+          title: copy.title,
+          body: copy.body,
+        },
+      });
+    }
+  }
+
   return payloads;
 }
 
@@ -205,7 +235,7 @@ export async function syncNativeSchedules(
           : null,
       }))
       .filter(({ id, scheduleAt }) => {
-        if (id < 1_000_000 || id >= 4_000_000) return false;
+        if (id < 1_000_000 || id >= NATIVE_NOTIFICATION_ID_MAX) return false;
         if (desiredIds.has(id)) return false;
         // Não cancelar timer_finished prestes a disparar (app em background).
         if (
@@ -260,6 +290,9 @@ export async function syncDeliveredNotificationsToInbox(
         parseNativeNotificationExtra(notification.extra),
       );
       if (entry) onPush(entry);
+    }
+    if (notifications.length > 0) {
+      await LocalNotifications.removeDeliveredNotifications({ notifications });
     }
   } catch {
     // Falha ao ler entregues: inbox segue com o que já tem.

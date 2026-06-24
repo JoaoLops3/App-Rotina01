@@ -104,6 +104,14 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     ),
   );
 
+  const timerCompletedViaTimerRef = useRef<Set<string>>(
+    new Set(
+      loadNotifications()
+        .filter((n) => n.type === "timer_finished" && n.taskId)
+        .map((n) => n.taskId!),
+    ),
+  );
+
   useEffect(() => {
     saveNotifications(notifications);
   }, [notifications]);
@@ -115,6 +123,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const pushFromNative = useCallback(
     (entry: NewNotification) => {
+      if (entry.type === "timer_finished" && entry.taskId) {
+        timerCompletedViaTimerRef.current.add(entry.taskId);
+      }
       push(entry);
     },
     [push],
@@ -188,6 +199,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         !knownCompletedRef.current.has(task.id)
       ) {
         knownCompletedRef.current.add(task.id);
+        if (timerCompletedViaTimerRef.current.has(task.id)) return;
         push(buildTaskCompletedEntry(task));
       }
     });
@@ -202,6 +214,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         !knownTimerFinishedRef.current.has(task.id)
       ) {
         knownTimerFinishedRef.current.add(task.id);
+        timerCompletedViaTimerRef.current.add(task.id);
         push(buildTimerFinishedEntry(task));
       }
     });

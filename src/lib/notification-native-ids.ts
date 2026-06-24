@@ -4,7 +4,11 @@ const KIND_OFFSET = {
   task_upcoming: 1_000_000,
   task_overdue: 2_000_000,
   timer_finished: 3_000_000,
+  streak_at_risk: 4_000_000,
 } as const;
+
+/** IDs nativos do app ficam entre 1M (inclusive) e 5M (exclusive). */
+export const NATIVE_NOTIFICATION_ID_MAX = 5_000_000;
 
 export type NativeNotificationKind = keyof typeof KIND_OFFSET;
 
@@ -27,7 +31,11 @@ export function nativeNotificationId(
 }
 
 export function isTimerFinishedNotificationId(id: number): boolean {
-  return id >= KIND_OFFSET.timer_finished && id < 4_000_000;
+  return id >= KIND_OFFSET.timer_finished && id < KIND_OFFSET.streak_at_risk;
+}
+
+export function nativeStreakAtRiskNotificationId(date?: Date): number {
+  return KIND_OFFSET.streak_at_risk + hashString(dayKey(date)) + 1;
 }
 
 export function allNativeIdsForTask(
