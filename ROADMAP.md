@@ -162,7 +162,7 @@
 
 ### Validação
 
-- [ ] Testar fluxo completo no **Android** (hoje foco iOS; API já é genérica)
+- [ ] Testar fluxo completo no **iOS** (foco atual — permissão, agendamento, deep link, sync inbox)
 - [ ] Limpar notificações entregues do centro do sistema após sync na inbox (opcional — `removeDeliveredNotifications`)
 
 **Pronto quando:** push no celular mostra ícone do app; usuário entende conclusão de tarefa sem abrir o app; streak em risco avisa à noite com app fechado.
