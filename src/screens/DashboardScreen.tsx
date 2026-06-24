@@ -1,6 +1,7 @@
+import { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { IonPage, IonContent } from "@ionic/react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { HeaderBar } from "../components/HeaderBar";
 import { TaskCard } from "../components/TaskCard";
 import { ProgressRing } from "../components/ProgressRing";
@@ -18,7 +19,49 @@ function getGreeting(): string {
 
 export function DashboardScreen() {
   const history = useHistory();
+  const location = useLocation();
   const { tasks, changeStatus, editTask, deleteTask } = useTasks();
+  const taskRefs = useRef<Record<string, HTMLElement | null>>({});
+
+  const highlightTaskId = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get("highlightTask");
+  }, [location.search]);
+
+  useEffect(() => {
+    if (!highlightTaskId) return;
+    const element = taskRefs.current[highlightTaskId];
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    const timeout = setTimeout(() => {
+      history.replace("/");
+    }, 4000);
+    return () => clearTimeout(timeout);
+  }, [highlightTaskId, history, tasks]);
+
+  const renderTaskCard = (
+    task: (typeof tasks)[number],
+    index: number,
+    isActive = false,
+  ) => (
+    <div
+      key={task.id}
+      ref={(el) => {
+        taskRefs.current[task.id] = el;
+      }}
+    >
+      <TaskCard
+        task={task}
+        index={index}
+        isActive={isActive}
+        highlighted={highlightTaskId === task.id}
+        onStatusChange={changeStatus}
+        onEdit={editTask}
+        onDelete={deleteTask}
+      />
+    </div>
+  );
 
   const activeTask = tasks.find((t) => t.status === "active");
   const focusSeconds = computeFocusSeconds(tasks);
@@ -57,8 +100,17 @@ export function DashboardScreen() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-2"
+                ref={(el) => {
+                  taskRefs.current[activeTask.id] = el;
+                }}
               >
-                <div className="card-glass p-5">
+                <div
+                  className={`card-glass p-5 ${
+                    highlightTaskId === activeTask.id
+                      ? "ring-2 ring-mint-400/60 ring-offset-2 ring-offset-surface-primary"
+                      : ""
+                  }`}
+                >
                   <div className="flex items-center gap-5">
                     <ProgressRing
                       progress={sessionProgress}
@@ -156,16 +208,9 @@ export function DashboardScreen() {
               </div>
               {visibleUpcoming.length > 0 ? (
                 <div className="space-y-3">
-                  {visibleUpcoming.map((task, index) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      index={index}
-                      onStatusChange={changeStatus}
-                      onEdit={editTask}
-                      onDelete={deleteTask}
-                    />
-                  ))}
+                  {visibleUpcoming.map((task, index) =>
+                    renderTaskCard(task, index),
+                  )}
                 </div>
               ) : (
                 <div className="card-glass flex flex-col items-center justify-center px-6 py-10 text-center">
@@ -208,16 +253,9 @@ export function DashboardScreen() {
                   </span>
                 </div>
                 <div className="space-y-3 opacity-60">
-                  {completedTasks.map((task, index) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      index={index}
-                      onStatusChange={changeStatus}
-                      onEdit={editTask}
-                      onDelete={deleteTask}
-                    />
-                  ))}
+                  {completedTasks.map((task, index) =>
+                    renderTaskCard(task, index),
+                  )}
                 </div>
                 <button
                   type="button"

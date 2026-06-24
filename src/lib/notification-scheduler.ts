@@ -1,6 +1,6 @@
 import type { Task } from "../components/TaskCard";
+import type { LeadMinutes } from "./notification-preferences";
 
-/** Converte "HH:MM" em minutos desde a meia-noite, ou null se inválido. */
 export function parseScheduledMinutes(time?: string): number | null {
   if (!time) return null;
   const [hours, mins] = time
@@ -14,10 +14,21 @@ function minutesOfDay(date: Date): number {
   return date.getHours() * 60 + date.getMinutes();
 }
 
+export function scheduledDateToday(
+  time: string,
+  now: Date = new Date(),
+): Date | null {
+  const scheduled = parseScheduledMinutes(time);
+  if (scheduled === null) return null;
+  const date = new Date(now);
+  date.setHours(Math.floor(scheduled / 60), scheduled % 60, 0, 0);
+  return date;
+}
+
 export function getUpcomingTaskReminders(
   tasks: Task[],
   now: Date = new Date(),
-  leadMinutes = 10,
+  leadMinutes: LeadMinutes = 10,
 ): Task[] {
   const nowMinutes = minutesOfDay(now);
   return tasks.filter((task) => {
@@ -26,4 +37,24 @@ export function getUpcomingTaskReminders(
     if (scheduled === null) return false;
     return nowMinutes >= scheduled - leadMinutes && nowMinutes <= scheduled;
   });
+}
+
+export function getOverdueTasks(tasks: Task[], now: Date = new Date()): Task[] {
+  const nowMinutes = minutesOfDay(now);
+  return tasks.filter((task) => {
+    if (task.status !== "pending") return false;
+    const scheduled = parseScheduledMinutes(task.scheduledTime);
+    if (scheduled === null) return false;
+    return nowMinutes > scheduled;
+  });
+}
+
+export function getTimerFinishAt(
+  task: Task,
+  now: Date = new Date(),
+): Date | null {
+  if (task.status !== "active") return null;
+  const remainingSeconds = task.duration - task.elapsed;
+  if (remainingSeconds <= 0) return null;
+  return new Date(now.getTime() + remainingSeconds * 1000);
 }

@@ -2,10 +2,11 @@ import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { useHistory } from "react-router-dom";
-import { Bell, ChevronLeft, CheckCheck } from "lucide-react";
+import { Bell, ChevronLeft, CheckCheck, Settings } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
 import { NotificationCard } from "../components/NotificationCard";
 import { useNotifications } from "../lib/notifications-context";
+import { getNotificationNavigationTarget } from "../lib/notification-deeplink";
 import { dayKey } from "../lib/day-stats";
 import { captureEvent } from "../lib/posthog";
 import type { AppNotification } from "../types/notification";
@@ -44,6 +45,18 @@ export function NotificationsScreen() {
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
     useNotifications();
 
+  const handleNotificationClick = (notification: AppNotification) => {
+    markAsRead(notification.id);
+    const target = getNotificationNavigationTarget(
+      notification.type,
+      notification.taskId,
+    );
+    history.push({
+      pathname: target.pathname,
+      search: target.search,
+    });
+  };
+
   const groups = useMemo(() => groupByDay(notifications), [notifications]);
 
   useEffect(() => {
@@ -78,18 +91,31 @@ export function NotificationsScreen() {
                   <ChevronLeft className="h-5 w-5" strokeWidth={2} />
                 </motion.button>
 
-                {unreadCount > 0 && (
+                <div className="flex items-center gap-2">
                   <motion.button
                     type="button"
-                    onClick={markAllAsRead}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.96 }}
-                    className="flex items-center gap-1.5 rounded-2xl border border-mint-500/20 bg-mint-500/10 px-3.5 py-2 text-xs font-medium text-mint-400 transition-colors hover:bg-mint-500/20 touch-manipulation"
+                    onClick={() => history.push("/notificacoes/preferencias")}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.92 }}
+                    className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-secondary text-obsidian-200 transition-colors hover:bg-surface-tertiary touch-manipulation"
+                    aria-label="Preferências de notificações"
                   >
-                    <CheckCheck className="h-4 w-4" strokeWidth={2} />
-                    Marcar todas como lidas
+                    <Settings className="h-5 w-5" strokeWidth={1.5} />
                   </motion.button>
-                )}
+
+                  {unreadCount > 0 && (
+                    <motion.button
+                      type="button"
+                      onClick={markAllAsRead}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.96 }}
+                      className="flex items-center gap-1.5 rounded-2xl border border-mint-500/20 bg-mint-500/10 px-3.5 py-2 text-xs font-medium text-mint-400 transition-colors hover:bg-mint-500/20 touch-manipulation"
+                    >
+                      <CheckCheck className="h-4 w-4" strokeWidth={2} />
+                      Marcar todas como lidas
+                    </motion.button>
+                  )}
+                </div>
               </div>
 
               <h1
@@ -143,7 +169,7 @@ export function NotificationsScreen() {
                         key={notification.id}
                         notification={notification}
                         index={index}
-                        onClick={markAsRead}
+                        onClick={handleNotificationClick}
                       />
                     ))}
                   </div>

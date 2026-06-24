@@ -10,6 +10,18 @@ import {
 } from "react";
 import type { AppNotification } from "../types/notification";
 import {
+  buildDailyGoalCopy,
+  buildStreakAtRiskCopy,
+  buildStreakMilestoneCopy,
+  buildTaskCompletedEntry,
+  buildTaskOverdueEntry,
+  buildTaskUpcomingEntry,
+  buildTimerFinishedEntry,
+  dailyGoalDedupKey,
+  streakAtRiskDedupKey,
+  streakMilestoneDedupKey,
+} from "./notification-copy";
+import {
   addNotification,
   loadNotifications,
   markAllAsRead as markAllReadStore,
@@ -17,8 +29,17 @@ import {
   saveNotifications,
   type NewNotification,
 } from "./notification-storage";
-import { computeFocusSeconds, dayKey } from "./day-stats";
-import { getUpcomingTaskReminders } from "./notification-scheduler";
+import { computeFocusSeconds } from "./day-stats";
+import {
+  getOverdueTasks,
+  getUpcomingTaskReminders,
+} from "./notification-scheduler";
+import {
+  loadPreferences,
+  savePreferences,
+  type NotificationPreferences,
+} from "./notification-preferences";
+import { syncNativeSchedules } from "./native-notifications";
 import { DAILY_GOAL_MINUTES, useTasks } from "./tasks-context";
 
 const POLL_INTERVAL_MS = 60_000;
@@ -28,8 +49,11 @@ const STREAK_RISK_HOUR = 20;
 interface NotificationsContextValue {
   notifications: AppNotification[];
   unreadCount: number;
+  preferences: NotificationPreferences;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  updatePreferences: (prefs: NotificationPreferences) => void;
+  pushFromNative: (entry: NewNotification) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextValue | null>(
@@ -51,21 +75,33 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<AppNotification[]>(() =>
     loadNotifications(),
   );
+  const [preferences, setPreferences] = useState<NotificationPreferences>(() =>
+    loadPreferences(),
+  );
 
-  // Refs com o estado mais recente para o polling não recriar o intervalo a
-  // cada tick do timer da tarefa ativa (que altera `tasks` a cada segundo).
   const tasksRef = useRef(tasks);
   const streakRef = useRef(streak);
+  const preferencesRef = useRef(preferences);
   useEffect(() => {
     tasksRef.current = tasks;
   }, [tasks]);
   useEffect(() => {
     streakRef.current = streak;
   }, [streak]);
+  useEffect(() => {
+    preferencesRef.current = preferences;
+  }, [preferences]);
 
-  // Conclusões já conhecidas: evita notificar tarefas já concluídas ao abrir.
   const knownCompletedRef = useRef<Set<string>>(
     new Set(tasks.filter((t) => t.status === "completed").map((t) => t.id)),
+  );
+
+  const knownTimerFinishedRef = useRef<Set<string>>(
+    new Set(
+      tasks
+        .filter((t) => t.status === "active" && t.elapsed >= t.duration)
+        .map((t) => t.id),
+    ),
   );
 
   useEffect(() => {
@@ -73,67 +109,78 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   }, [notifications]);
 
   const push = useCallback((entry: NewNotification) => {
+    if (!preferencesRef.current.enabled[entry.type]) return;
     setNotifications((prev) => addNotification(prev, entry));
   }, []);
+
+  const pushFromNative = useCallback(
+    (entry: NewNotification) => {
+      push(entry);
+    },
+    [push],
+  );
 
   const runGeneration = useCallback(() => {
     const now = new Date();
     const currentTasks = tasksRef.current;
     const currentStreak = streakRef.current;
-    const today = dayKey(now);
+    const prefs = preferencesRef.current;
 
-    // Lembrete ~10 min antes do horário agendado.
-    getUpcomingTaskReminders(currentTasks, now).forEach((task) => {
-      push({
-        type: "task_upcoming",
-        title: "Tarefa chegando",
-        body: `${task.title} começa às ${task.scheduledTime}. Prepare-se para iniciar.`,
-        dedupKey: `task-upcoming:${task.id}:${today}`,
-        taskId: task.id,
-      });
-    });
-
-    // Meta diária de foco atingida (1x por dia).
-    const focusMinutes = Math.floor(computeFocusSeconds(currentTasks) / 60);
-    if (focusMinutes >= DAILY_GOAL_MINUTES) {
-      const goalHours = Math.round(DAILY_GOAL_MINUTES / 60);
-      push({
-        type: "daily_goal_reached",
-        title: "Meta diária atingida",
-        body: `Você bateu a meta de ${goalHours}h de foco hoje. Continue assim!`,
-        dedupKey: `goal:${today}`,
-      });
+    if (prefs.enabled.task_upcoming) {
+      getUpcomingTaskReminders(currentTasks, now, prefs.leadMinutes).forEach(
+        (task) => push(buildTaskUpcomingEntry(task, now)),
+      );
     }
 
-    // Marco de sequência (3, 7, 14, 30 dias) — 1x cada.
-    if (STREAK_MILESTONES.includes(currentStreak)) {
-      push({
-        type: "streak_milestone",
-        title: `Sequência de ${currentStreak} dias`,
-        body: `${currentStreak} dias seguidos com tarefas concluídas. Incrível!`,
-        dedupKey: `streak:${currentStreak}`,
-      });
+    if (prefs.enabled.task_overdue) {
+      getOverdueTasks(currentTasks, now).forEach((task) =>
+        push(buildTaskOverdueEntry(task, now)),
+      );
     }
 
-    // Sequência em risco: após 20h, com streak ativo e 0 conclusões hoje.
-    const completedToday = currentTasks.filter(
-      (t) => t.status === "completed",
-    ).length;
-    if (
-      now.getHours() >= STREAK_RISK_HOUR &&
-      currentStreak > 0 &&
-      completedToday === 0
-    ) {
-      push({
-        type: "streak_at_risk",
-        title: "Não perca sua sequência",
-        body: `Você ainda não concluiu nenhuma tarefa hoje. Falta pouco para manter os ${currentStreak} dias!`,
-        dedupKey: `streak-risk:${today}`,
-      });
+    if (prefs.enabled.daily_goal_reached) {
+      const focusMinutes = Math.floor(computeFocusSeconds(currentTasks) / 60);
+      if (focusMinutes >= DAILY_GOAL_MINUTES) {
+        const goalHours = Math.round(DAILY_GOAL_MINUTES / 60);
+        const copy = buildDailyGoalCopy(goalHours);
+        push({
+          type: "daily_goal_reached",
+          ...copy,
+          dedupKey: dailyGoalDedupKey(now),
+        });
+      }
+    }
+
+    if (prefs.enabled.streak_milestone) {
+      if (STREAK_MILESTONES.includes(currentStreak)) {
+        const copy = buildStreakMilestoneCopy(currentStreak);
+        push({
+          type: "streak_milestone",
+          ...copy,
+          dedupKey: streakMilestoneDedupKey(currentStreak),
+        });
+      }
+    }
+
+    if (prefs.enabled.streak_at_risk) {
+      const completedToday = currentTasks.filter(
+        (t) => t.status === "completed",
+      ).length;
+      if (
+        now.getHours() >= STREAK_RISK_HOUR &&
+        currentStreak > 0 &&
+        completedToday === 0
+      ) {
+        const copy = buildStreakAtRiskCopy(currentStreak);
+        push({
+          type: "streak_at_risk",
+          ...copy,
+          dedupKey: streakAtRiskDedupKey(now),
+        });
+      }
     }
   }, [push]);
 
-  // Tarefa concluída: dispara imediatamente na transição para `completed`.
   useEffect(() => {
     tasks.forEach((task) => {
       if (
@@ -141,28 +188,38 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         !knownCompletedRef.current.has(task.id)
       ) {
         knownCompletedRef.current.add(task.id);
-        push({
-          type: "task_completed",
-          title: "Tarefa concluída",
-          body: `Você concluiu ${task.title}. Bom trabalho!`,
-          dedupKey: `task-completed:${task.id}`,
-          taskId: task.id,
-        });
+        push(buildTaskCompletedEntry(task));
       }
     });
   }, [tasks, push]);
 
-  // Polling a cada 60s (lembretes, meta e risco) enquanto o app está aberto.
+  useEffect(() => {
+    if (!preferences.enabled.timer_finished) return;
+    tasks.forEach((task) => {
+      if (
+        task.status === "active" &&
+        task.elapsed >= task.duration &&
+        !knownTimerFinishedRef.current.has(task.id)
+      ) {
+        knownTimerFinishedRef.current.add(task.id);
+        push(buildTimerFinishedEntry(task));
+      }
+    });
+  }, [tasks, push, preferences.enabled.timer_finished]);
+
   useEffect(() => {
     runGeneration();
     const interval = setInterval(runGeneration, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [runGeneration]);
 
-  // Reage imediatamente a mudanças de sequência (marcos / risco).
   useEffect(() => {
     runGeneration();
-  }, [streak, runGeneration]);
+  }, [streak, preferences, runGeneration]);
+
+  useEffect(() => {
+    void syncNativeSchedules(tasks, preferences);
+  }, [tasks, preferences]);
 
   const markAsRead = useCallback((id: string) => {
     setNotifications((prev) => markReadStore(prev, id));
@@ -172,11 +229,33 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => markAllReadStore(prev));
   }, []);
 
+  const updatePreferences = useCallback((prefs: NotificationPreferences) => {
+    setPreferences(prefs);
+    savePreferences(prefs);
+    void syncNativeSchedules(tasksRef.current, prefs);
+  }, []);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const value = useMemo<NotificationsContextValue>(
-    () => ({ notifications, unreadCount, markAsRead, markAllAsRead }),
-    [notifications, unreadCount, markAsRead, markAllAsRead],
+    () => ({
+      notifications,
+      unreadCount,
+      preferences,
+      markAsRead,
+      markAllAsRead,
+      updatePreferences,
+      pushFromNative,
+    }),
+    [
+      notifications,
+      unreadCount,
+      preferences,
+      markAsRead,
+      markAllAsRead,
+      updatePreferences,
+      pushFromNative,
+    ],
   );
 
   return (

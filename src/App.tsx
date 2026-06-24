@@ -10,10 +10,13 @@ import { AgendaScreen } from "./screens/AgendaScreen";
 import { StatsScreen } from "./screens/StatsScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { NotificationsScreen } from "./screens/NotificationsScreen";
+import { NotificationPreferencesScreen } from "./screens/NotificationPreferencesScreen";
 import { CustomTabBar } from "./components/CustomTabBar";
 import { NewTaskSheet } from "./components/NewTaskSheet";
+import { NativeNotificationBridge } from "./components/NativeNotificationBridge";
 import { TasksProvider, useTasks } from "./lib/tasks-context";
 import { NotificationsProvider } from "./lib/notifications-context";
+import { syncNativeSchedulesFromStorage } from "./lib/native-notifications";
 import { posthog } from "./lib/posthog";
 
 setupIonicReact({
@@ -34,6 +37,36 @@ function GlobalTaskSheet() {
   );
 }
 
+function AppRoutes() {
+  const { tasks } = useTasks();
+
+  useEffect(() => {
+    void syncNativeSchedulesFromStorage(tasks);
+  }, [tasks]);
+
+  return (
+    <>
+      <IonRouterOutlet animated={false}>
+        <Switch>
+          <Route exact path="/" component={DashboardScreen} />
+          <Route exact path="/agenda" component={AgendaScreen} />
+          <Route exact path="/stats" component={StatsScreen} />
+          <Route exact path="/perfil" component={ProfileScreen} />
+          <Route exact path="/notificacoes" component={NotificationsScreen} />
+          <Route
+            exact
+            path="/notificacoes/preferencias"
+            component={NotificationPreferencesScreen}
+          />
+        </Switch>
+      </IonRouterOutlet>
+      <CustomTabBar />
+      <GlobalTaskSheet />
+      <NativeNotificationBridge />
+    </>
+  );
+}
+
 function App() {
   useEffect(() => {
     const initNative = async () => {
@@ -42,7 +75,6 @@ function App() {
         await StatusBar.setStyle({ style: Style.Dark });
         await SplashScreen.hide();
       } catch (err) {
-        // Plugins unavailable in browser (ionic serve)
         if (
           err instanceof Error &&
           err.message &&
@@ -73,21 +105,7 @@ function App() {
       <TasksProvider>
         <NotificationsProvider>
           <IonReactRouter>
-            <IonRouterOutlet animated={false}>
-              <Switch>
-                <Route exact path="/" component={DashboardScreen} />
-                <Route exact path="/agenda" component={AgendaScreen} />
-                <Route exact path="/stats" component={StatsScreen} />
-                <Route exact path="/perfil" component={ProfileScreen} />
-                <Route
-                  exact
-                  path="/notificacoes"
-                  component={NotificationsScreen}
-                />
-              </Switch>
-            </IonRouterOutlet>
-            <CustomTabBar />
-            <GlobalTaskSheet />
+            <AppRoutes />
           </IonReactRouter>
         </NotificationsProvider>
       </TasksProvider>
