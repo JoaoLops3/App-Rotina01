@@ -38,8 +38,8 @@ function App() {
   useEffect(() => {
     const initNative = async () => {
       try {
+        await StatusBar.setOverlaysWebView({ overlay: true });
         await StatusBar.setStyle({ style: Style.Dark });
-        await StatusBar.setBackgroundColor({ color: "#0d0d12" });
         await SplashScreen.hide();
       } catch (err) {
         // Plugins unavailable in browser (ionic serve)

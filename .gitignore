@@ -33,6 +33,5 @@ dist-ssr
 # PostHog wizard (skills locais do agente)
 .claude/
 
-# Capacitor — projetos nativos gerados localmente (npx cap sync)
+# Capacitor — Android gerado localmente (foco atual: iOS)
 android/
-ios/

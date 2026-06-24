@@ -47,7 +47,7 @@ export function DashboardScreen() {
       <IonContent scrollY={true} className="ion-content-custom">
         <OrbBackground />
 
-        <div className="relative z-10 min-h-screen pb-32">
+        <div className="relative z-10 min-h-screen pb-32 md:mx-auto md:max-w-xl">
           <HeaderBar greeting={getGreeting()} userName="Alex" />
 
           <div className="px-4 space-y-6">

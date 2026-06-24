@@ -4,16 +4,19 @@ const config: CapacitorConfig = {
   appId: 'com.joaolops3.approtina',
   appName: 'App Rotina',
   webDir: 'dist',
+  backgroundColor: '#0d0d12',
   server: {
     androidScheme: 'https',
     iosScheme: 'https',
   },
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     scrollEnabled: true,
+    backgroundColor: '#0d0d12',
   },
   android: {
     allowMixedContent: false,
+    backgroundColor: '#0d0d12',
   },
   plugins: {
     SplashScreen: {
@@ -25,6 +28,7 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: 'DARK',
       backgroundColor: '#0d0d12',
+      overlaysWebView: true,
     },
     Keyboard: {
       resize: 'body',

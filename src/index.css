@@ -15,6 +15,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    height: 100%;
+    width: 100%;
+    background-color: #0d0d12;
   }
 
   body {
@@ -23,6 +26,15 @@
     overflow-x: hidden;
     min-height: 100vh;
     min-height: 100dvh;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    background-color: #0d0d12;
   }
 
   ::-webkit-scrollbar {
@@ -135,6 +147,12 @@
 
 .safe-bottom {
   padding-bottom: var(--safe-area-bottom);
+}
+
+/* Top padding that respects the device safe area (notch / Dynamic Island /
+   status bar) plus a small breathing gap. Replaces hardcoded pt-12. */
+.pt-safe {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
 }
 
 @keyframes breathe {
