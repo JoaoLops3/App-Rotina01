@@ -109,6 +109,7 @@
 
 **Pronto quando:** concluo tarefa, bato meta ou chega horário agendado → alerta aparece na central, persiste ao reabrir, sino mostra não lidas.
 
+**Plano:** [`página_notificações_b4ce06b2.plan.md`](./página_notificações_b4ce06b2.plan.md)  
 **Branch:** `feat/notificacoes` (mergeado na `main` via PR #6)
 
 ---
@@ -171,6 +172,8 @@
 ---
 
 ## Fase 9 — Seletor de avatar no Perfil ✅
+
+> Plano: [`avatar_picker_perfil_d8c6a32e.plan.md`](./avatar_picker_perfil_d8c6a32e.plan.md)
 
 **Objetivo:** o usuário escolhe um avatar DiceBear (toon-head) no Perfil; a escolha persiste localmente e aparece no header.
 

@@ -23,11 +23,11 @@ dist-ssr
 .env
 .env.*
 
-# Cursor / Claude (planos e configs locais — não publicar)
-.cursor/
-.cursor/plans/
-.cursor/**
-**/.cursor/plans/
+# Cursor — versionar só o ROADMAP; demais planos ficam locais
+.cursor/*
+!.cursor/plans/
+.cursor/plans/*
+!.cursor/plans/ROADMAP.md
 *.plan.md
 
 # PostHog wizard (skills locais do agente)
