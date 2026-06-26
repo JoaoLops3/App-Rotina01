@@ -2,14 +2,22 @@ import { motion } from "framer-motion";
 import { Bell } from "lucide-react";
 import { useHistory } from "react-router-dom";
 import { useNotifications } from "../lib/notifications-context";
+import { Avatar } from "./Avatar";
+import type { AvatarStyle } from "../types/avatar";
 
 interface HeaderProps {
   greeting: string;
   userName: string;
-  avatarUrl?: string;
+  avatarSeed?: string | null;
+  avatarStyle?: AvatarStyle;
 }
 
-export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
+export function HeaderBar({
+  greeting,
+  userName,
+  avatarSeed,
+  avatarStyle = "toon-head",
+}: HeaderProps) {
   const history = useHistory();
   const { unreadCount } = useNotifications();
 
@@ -33,11 +41,12 @@ export function HeaderBar({ greeting, userName, avatarUrl }: HeaderProps) {
             className="w-11 h-11 rounded-2xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5"
             style={{ boxShadow: "0 0 20px rgba(52, 211, 153, 0.2)" }}
           >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={userName}
-                className="w-full h-full rounded-[14px] object-cover"
+            {avatarSeed ? (
+              <Avatar
+                seed={avatarSeed}
+                style={avatarStyle}
+                className="w-full h-full rounded-[14px]"
+                alt={`Avatar de ${userName}`}
               />
             ) : (
               <div className="w-full h-full rounded-[14px] bg-surface-primary flex items-center justify-center">

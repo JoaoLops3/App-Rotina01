@@ -15,6 +15,7 @@ import { CustomTabBar } from "./components/CustomTabBar";
 import { NewTaskSheet } from "./components/NewTaskSheet";
 import { NativeNotificationBridge } from "./components/NativeNotificationBridge";
 import { TasksProvider, useTasks } from "./lib/tasks-context";
+import { ProfileProvider } from "./lib/profile-context";
 import { NotificationsProvider } from "./lib/notifications-context";
 import { syncNativeSchedulesFromStorage } from "./lib/native-notifications";
 import { posthog } from "./lib/posthog";
@@ -102,13 +103,15 @@ function App() {
 
   return (
     <IonApp>
-      <TasksProvider>
-        <NotificationsProvider>
-          <IonReactRouter>
-            <AppRoutes />
-          </IonReactRouter>
-        </NotificationsProvider>
-      </TasksProvider>
+      <ProfileProvider>
+        <TasksProvider>
+          <NotificationsProvider>
+            <IonReactRouter>
+              <AppRoutes />
+            </IonReactRouter>
+          </NotificationsProvider>
+        </TasksProvider>
+      </ProfileProvider>
     </IonApp>
   );
 }

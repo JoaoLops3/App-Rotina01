@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { useHistory } from "react-router-dom";
@@ -10,12 +11,14 @@ import {
   LogOut,
   Flame,
   ChevronRight,
+  ImageIcon,
   type LucideIcon,
 } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
+import { Avatar } from "../components/Avatar";
+import { AvatarPickerSheet } from "../components/AvatarPickerSheet";
 import { useTasks } from "../lib/tasks-context";
-
-const USER_NAME = "Alex";
+import { useProfile } from "../lib/profile-context";
 
 interface SettingsRowProps {
   icon: LucideIcon;
@@ -70,9 +73,12 @@ function SectionLabel({
 
 export function ProfileScreen() {
   const { streak } = useTasks();
+  const { profile } = useProfile();
   const history = useHistory();
+  const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
 
   const noop = () => {};
+  const openAvatarPicker = () => setIsAvatarPickerOpen(true);
 
   return (
     <IonPage>
@@ -87,24 +93,38 @@ export function ProfileScreen() {
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="flex flex-col items-center text-center"
             >
-              <div
-                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5"
+              <motion.button
+                type="button"
+                onClick={openAvatarPicker}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                aria-label="Alterar avatar"
+                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5 touch-manipulation"
                 style={{ boxShadow: "0 0 30px rgba(52, 211, 153, 0.25)" }}
               >
-                <div className="w-full h-full rounded-[22px] bg-surface-primary flex items-center justify-center">
-                  <span
-                    className="font-display font-bold text-3xl text-white"
-                    style={{ fontFamily: "Space Grotesk" }}
-                  >
-                    {USER_NAME.charAt(0).toUpperCase()}
-                  </span>
+                <div className="w-full h-full rounded-[22px] bg-surface-primary flex items-center justify-center overflow-hidden">
+                  {profile.avatarSeed ? (
+                    <Avatar
+                      seed={profile.avatarSeed}
+                      style={profile.avatarStyle}
+                      className="w-full h-full rounded-[22px]"
+                      alt="Avatar do perfil"
+                    />
+                  ) : (
+                    <span
+                      className="font-display font-bold text-3xl text-white"
+                      style={{ fontFamily: "Space Grotesk" }}
+                    >
+                      {profile.displayName.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
-              </div>
+              </motion.button>
               <h1
                 className="mt-4 mb-0 font-display font-semibold text-2xl text-white tracking-tight"
                 style={{ fontFamily: "Space Grotesk" }}
               >
-                {USER_NAME}
+                {profile.displayName}
               </h1>
               <p className="text-obsidian-500 text-sm mt-1">
                 Construindo uma rotina melhor,
@@ -126,6 +146,11 @@ export function ProfileScreen() {
             >
               <SectionLabel>Preferências</SectionLabel>
               <div className="card-glass divide-y divide-white/5 overflow-hidden">
+                <SettingsRow
+                  icon={ImageIcon}
+                  label="Alterar avatar"
+                  onClick={openAvatarPicker}
+                />
                 <SettingsRow
                   icon={Bell}
                   label="Notificações"
@@ -177,6 +202,11 @@ export function ProfileScreen() {
             </motion.section>
           </div>
         </div>
+
+        <AvatarPickerSheet
+          isOpen={isAvatarPickerOpen}
+          onClose={() => setIsAvatarPickerOpen(false)}
+        />
       </IonContent>
     </IonPage>
   );
