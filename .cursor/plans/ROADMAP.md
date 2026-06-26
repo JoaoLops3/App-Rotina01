@@ -150,22 +150,22 @@
 
 ### Visual / identidade
 
-- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo App Rotina (asset no Xcode / `AppIcon`) — *adiado → Fase 10*
-- [ ] **Ícone do push no Android** — `smallIcon` em `res/drawable` + `capacitor.config.ts` (quando pasta `android/` voltar ao repo) — *adiado → Fase 10*
+- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo App Rotina (asset no Xcode / `AppIcon`) — *adiado → Fase 11*
+- [ ] **Ícone do push no Android** — `smallIcon` em `res/drawable` + `capacitor.config.ts` (quando pasta `android/` voltar ao repo) — *adiado → Fase 11*
 
 ### Push nativo — tipos que hoje são só in-app
 
 - [x] **`task_completed`** — copy unificada via `timer_finished` → "Tarefa concluída" quando timer acaba; dedup na inbox evita duplicata ao reabrir
 - [x] **`streak_at_risk`** — agendar push nativo às 20h local (1x/dia, se streak > 0 e 0 conclusões)
-- [ ] **`daily_goal_reached`** — push ao bater meta — *adiado → Fase 10*
-- [ ] **`streak_milestone`** — push ao atingir 3, 7, 14, 30 dias — *adiado → Fase 10*
+- [ ] **`daily_goal_reached`** — push ao bater meta — *adiado → Fase 11*
+- [ ] **`streak_milestone`** — push ao atingir 3, 7, 14, 30 dias — *adiado → Fase 11*
 
 ### Validação
 
 - [x] Testar fluxo completo no **iOS** (permissão, agendamento, deep link, sync inbox, streak 20h)
 - [x] Limpar notificações entregues do centro do sistema após sync na inbox (`removeDeliveredNotifications`)
 
-**Pronto quando:** usuário entende conclusão de tarefa sem abrir o app; streak em risco avisa à noite com app fechado. *(ícones customizados do push adiados para Fase 10.)*
+**Pronto quando:** usuário entende conclusão de tarefa sem abrir o app; streak em risco avisa à noite com app fechado. *(ícones customizados do push adiados para Fase 11.)*
 
 **Branch:** mergeado na `main` via PR #8 (`feat/notificacoes-fase-8 e 8.5`)
 
@@ -207,7 +207,48 @@
 
 ---
 
-## Fase 10 — Login, conta e sync na nuvem (Supabase)
+## Fase 10 — Performance e responsividade ✅
+
+> **Por que entrou aqui:** durante a Fase 9.5 (primeira experiência limpa), o app ficou perceptivelmente lento no uso diário — timer causando re-renders globais, boot pesado, `localStorage` crescendo sem limite, blur e animações custosas no mobile. Em vez de seguir direto para Supabase (antiga Fase 10), priorizamos deixar a base local **rápida e estável** antes de sync na nuvem.
+>
+> Planos: [`performance_lazy_routes_timer_posthog.plan.md`](./performance_lazy_routes_timer_posthog.plan.md) (Fase 1 perf) · [`performance_fase2_renders_storage_boot.plan.md`](./performance_fase2_renders_storage_boot.plan.md) (Fase 2 perf)
+
+**Objetivo:** app responsivo no dia a dia, boot mais leve e storage sob controle — sem regressão visual perceptível no desktop/web.
+
+### Fase 10a — Runtime e boot (lazy + timer + analytics)
+
+- [x] Lazy routes — Agenda, Stats, Perfil, Notificações carregam sob demanda (`React.lazy` + `Suspense`).
+- [x] Timer isolado — `useActiveElapsed` + relógio de parede; sem `setTasks` a cada segundo.
+- [x] PostHog deferido — init após first paint (`requestIdleCallback` / timeout).
+- [x] PostHog enxuto no nativo — recorder/surveys off; depois também `autocapture`, `capture_pageview` e `capture_pageleave` off.
+- [x] Sync nativo com fingerprint — reagenda notificações só quando status/horário/duração mudam, não no tick do timer.
+- [x] Avatar picker — `preconnect` + prefetch do próximo lote (cache HTTP, sem `localStorage`).
+- [x] `decoding="async"` no `<img>` do Avatar.
+
+### Fase 10b — Renders, storage, boot e GPU
+
+- [x] `TasksProvider` estável — handlers em `useCallback` + `value` em `useMemo` (refs para `tasks`/`editingTaskId`).
+- [x] `React.memo(TaskCard)` — comparador nas props que afetam render; callbacks estáveis.
+- [x] Poda de concluídas — `completedAt` (ISO) ao concluir; remove `completed` com mais de **14 dias** em `saveTasks`/`loadTasks`; legado sem data mantido.
+- [x] Fontes self-hosted — Space Grotesk + Inter em `public/fonts/`; sem `@import` do Google Fonts.
+- [x] Vendor chunks (Vite) — `vendor-ionic`, `vendor-motion`, `vendor-analytics`, `vendor-icons`.
+- [x] GPU mobile — blur off em `.card-glass`/tab bar no mobile e nativo; `OrbBackground` off no nativo e com `prefers-reduced-motion`.
+- [x] LazyMotion + `domMax` — `MotionProvider` no root (suporta `layoutId` da tab bar).
+- [x] Baseline documentada — `docs/perf-phase-2-baseline.md`.
+
+### Polish pós-perf (produto)
+
+- [x] Remover seção **Concluídas** do Início — foco no agora; histórico de concluídas só na Agenda.
+- [x] Corrigir artefato de quadrado no `ProgressRing` (glow sem `drop-shadow` CSS no SVG).
+
+**Pronto quando:** pausar 1 tarefa em lista grande não re-renderiza todos os cards; boot sem requests a `fonts.googleapis.com`; build gera vendor chunks separados; scroll fluido no mobile; concluídas antigas somem do storage após 14 dias sem quebrar Stats/streak.
+
+**Arquivos:** `tasks-context.tsx`, `TaskCard.tsx`, `storage.ts`, `index.css`, `vite.config.ts`, `posthog.ts`, `motion.tsx`, `OrbBackground.tsx`, `CustomTabBar.tsx`, `ProgressRing.tsx`, `DashboardScreen.tsx`, `App.tsx`, `public/fonts/*`, `docs/perf-phase-2-baseline.md`  
+**Branch sugerida:** `perf/phase-2-renders-storage-boot` (em cima da Fase 10a ou `main` após merge)
+
+---
+
+## Fase 11 — Login, conta e sync na nuvem (Supabase)
 
 > Só depois que o loop local, notificações e perfil estiverem sólidos.
 
@@ -228,9 +269,9 @@
 
 ---
 
-## Fase 11 — Rotinas prontas (foco em acolhimento / TDAH)
+## Fase 12 — Rotinas prontas (foco em acolhimento / TDAH)
 
-> **Depois da Fase 10** — roda após login/criação de conta, não antes.
+> **Depois da Fase 11** — roda após login/criação de conta, não antes.
 
 **Objetivo:** quem acabou de criar conta não enfrenta lista vazia. Oferecer rotinas prontas, pensadas para quem tem dificuldade com foco e organização (incl. público com TDAH), com sensação de acolhimento e capacidade real de manter uma rotina.
 
@@ -256,7 +297,7 @@
 
 ---
 
-## Fase 12 — Agenda semanal
+## Fase 13 — Agenda semanal
 
 > Visão além do dia — planejar a semana inteira.
 
@@ -274,7 +315,7 @@
 
 ---
 
-## Fase 13 — (Futuro) Rotina adaptativa
+## Fase 14 — (Futuro) Rotina adaptativa
 
 > O ganho 10x — só faz sentido com dados reais de uso (PostHog + Supabase).
 
@@ -285,7 +326,7 @@
 
 ### Como trabalhar
 
-> **Status atual:** Fases 1–9.5 concluídas na `main`. **Próxima fase aberta:** Fase 10 — login, conta e sync Supabase.
+> **Status atual:** Fases 1–10 concluídas na `main` (incl. performance Fase 10 antes do backend). **Próxima fase aberta:** Fase 11 — login, conta e sync Supabase.
 
 1. Pegue **a fase mais ao topo ainda aberta**.
 2. Faça os checkboxes dela.
