@@ -6,6 +6,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { App as CapApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 import type { Task, TaskStatus } from "../components/TaskCard";
 import { loadTasks, saveTasks } from "./storage";
 import {
@@ -15,10 +17,28 @@ import {
   recordToday,
 } from "./day-stats";
 import { captureEvent } from "./posthog";
+import {
+  cancelTaskNotifications,
+  requestNotificationPermission,
+} from "./native-notifications";
 
 const MINUTE = 60;
 
 export const DAILY_GOAL_MINUTES = 300;
+
+interface ActiveSession {
+  taskId: string;
+  startedAtMs: number;
+  elapsedAtStart: number;
+}
+
+function getWallClockElapsed(task: Task, session: ActiveSession | null): number {
+  if (!session || session.taskId !== task.id || task.status !== "active") {
+    return task.elapsed;
+  }
+  const delta = Math.floor((Date.now() - session.startedAtMs) / 1000);
+  return Math.min(task.duration, session.elapsedAtStart + delta);
+}
 
 const sampleTasks: Task[] = [
   {
@@ -136,6 +156,57 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     ),
   );
 
+  const appActiveRef = useRef(true);
+  const activeSessionRef = useRef<ActiveSession | null>(null);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const listener = CapApp.addListener("appStateChange", ({ isActive }) => {
+      appActiveRef.current = isActive;
+
+      if (!isActive) return;
+
+      setTasks((prev) => {
+        const active = prev.find((t) => t.status === "active");
+        if (!active) return prev;
+
+        const newElapsed = getWallClockElapsed(active, activeSessionRef.current);
+        if (newElapsed >= active.duration) {
+          activeSessionRef.current = null;
+          return prev.map((t) =>
+            t.id === active.id
+              ? { ...t, elapsed: t.duration, status: "completed" as TaskStatus }
+              : t,
+          );
+        }
+        if (newElapsed === active.elapsed) return prev;
+        return prev.map((t) =>
+          t.id === active.id ? { ...t, elapsed: newElapsed } : t,
+        );
+      });
+    });
+
+    return () => {
+      void listener.then((handle) => handle.remove());
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!activeTask) {
+      activeSessionRef.current = null;
+      return;
+    }
+
+    if (activeSessionRef.current?.taskId !== activeTask.id) {
+      activeSessionRef.current = {
+        taskId: activeTask.id,
+        startedAtMs: Date.now(),
+        elapsedAtStart: activeTask.elapsed,
+      };
+    }
+  }, [activeTask?.id]);
+
   useEffect(() => {
     saveTasks(tasks);
   }, [tasks]);
@@ -144,22 +215,28 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (!activeTask) return;
 
     const interval = setInterval(() => {
+      if (Capacitor.isNativePlatform() && !appActiveRef.current) return;
+
       setTasks((prevTasks) =>
         prevTasks.map((task) => {
-          if (
-            task.id === activeTask.id &&
-            task.status === "active" &&
-            task.elapsed < task.duration
-          ) {
-            const nextElapsed = task.elapsed + 1;
-            if (nextElapsed >= task.duration) {
-              return {
-                ...task,
-                elapsed: task.duration,
-                status: "completed" as TaskStatus,
-              };
-            }
-            return { ...task, elapsed: nextElapsed };
+          if (task.id !== activeTask.id || task.status !== "active") {
+            return task;
+          }
+
+          const newElapsed = getWallClockElapsed(
+            task,
+            activeSessionRef.current,
+          );
+          if (newElapsed >= task.duration) {
+            activeSessionRef.current = null;
+            return {
+              ...task,
+              elapsed: task.duration,
+              status: "completed" as TaskStatus,
+            };
+          }
+          if (newElapsed !== task.elapsed) {
+            return { ...task, elapsed: newElapsed };
           }
           return task;
         }),
@@ -198,6 +275,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   }, [tasks]);
 
   const submitTask = (task: Task) => {
+    if (task.scheduledTime) {
+      void requestNotificationPermission();
+    }
+
     if (editingTaskId) {
       setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
       captureEvent("task edited", {
@@ -239,6 +320,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const deleteTask = (id: string) => {
     const target = tasks.find((t) => t.id === id);
     completedRecordedRef.current.delete(id);
+    void cancelTaskNotifications(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
     if (target) {
       captureEvent("task deleted", {
@@ -251,17 +333,44 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   };
 
   const changeStatus = (id: string, newStatus: TaskStatus) => {
+    const task = tasks.find((t) => t.id === id);
+    let pausedElapsed: number | undefined;
+
+    if (newStatus === "paused" && task?.status === "active") {
+      pausedElapsed = getWallClockElapsed(task, activeSessionRef.current);
+      void cancelTaskNotifications(id);
+    }
+
+    if (newStatus === "completed") {
+      void cancelTaskNotifications(id);
+    }
+
+    if (newStatus === "active") {
+      activeSessionRef.current = {
+        taskId: id,
+        startedAtMs: Date.now(),
+        elapsedAtStart: task?.elapsed ?? 0,
+      };
+    } else if (activeSessionRef.current?.taskId === id) {
+      activeSessionRef.current = null;
+    }
+
     setTasks((prev) => {
-      const updated = prev.map((task) =>
-        task.id === id ? { ...task, status: newStatus } : task,
-      );
+      const updated = prev.map((t) => {
+        if (t.id !== id) return t;
+        if (newStatus === "paused" && pausedElapsed !== undefined) {
+          return { ...t, status: newStatus, elapsed: pausedElapsed };
+        }
+        return { ...t, status: newStatus };
+      });
+
       if (newStatus === "active") {
-        return updated.map((task) =>
-          task.id === id
-            ? task
-            : task.status === "active"
-              ? { ...task, status: "paused" }
-              : task,
+        return updated.map((t) =>
+          t.id === id
+            ? t
+            : t.status === "active"
+              ? { ...t, status: "paused" }
+              : t,
         );
       }
       return updated;

@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
 import {
+  AlertCircle,
   AlertTriangle,
   CheckCircle,
   Clock,
   Flame,
   Target,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 import type { AppNotification, NotificationType } from "../types/notification";
@@ -41,6 +43,16 @@ const typeStyles: Record<NotificationType, TypeStyle> = {
     iconClass: "text-coral-400",
     bgClass: "bg-coral-500/15",
   },
+  task_overdue: {
+    icon: AlertCircle,
+    iconClass: "text-coral-400",
+    bgClass: "bg-coral-500/15",
+  },
+  timer_finished: {
+    icon: Timer,
+    iconClass: "text-mint-400",
+    bgClass: "bg-mint-500/15",
+  },
 };
 
 function formatRelativeTime(iso: string, now: Date = new Date()): string {
@@ -69,7 +81,7 @@ function formatRelativeTime(iso: string, now: Date = new Date()): string {
 interface NotificationCardProps {
   notification: AppNotification;
   index: number;
-  onClick: (id: string) => void;
+  onClick: (notification: AppNotification) => void;
 }
 
 export function NotificationCard({
@@ -82,7 +94,7 @@ export function NotificationCard({
   return (
     <motion.button
       type="button"
-      onClick={() => onClick(notification.id)}
+      onClick={() => onClick(notification)}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(index * 0.04, 0.3) }}

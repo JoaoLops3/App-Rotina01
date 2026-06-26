@@ -29,6 +29,7 @@ interface TaskCardProps {
   task: Task;
   index: number;
   isActive?: boolean;
+  highlighted?: boolean;
   onStatusChange?: (id: string, status: TaskStatus) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
@@ -46,6 +47,7 @@ export function TaskCard({
   task,
   index,
   isActive = false,
+  highlighted = false,
   onStatusChange,
   onEdit,
   onDelete,
@@ -84,7 +86,11 @@ export function TaskCard({
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
       style={menuOpen ? { zIndex: 40 } : undefined}
-      className={`relative ${isActive ? "card-glass" : "card-premium"} p-5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] touch-manipulation`}
+      className={`relative ${isActive ? "card-glass" : "card-premium"} p-5 transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] touch-manipulation ${
+        highlighted
+          ? "ring-2 ring-mint-400/60 ring-offset-2 ring-offset-surface-primary"
+          : ""
+      }`}
     >
       {isActive && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">

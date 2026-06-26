@@ -134,7 +134,7 @@ export function ProfileScreen() {
                 <SettingsRow
                   icon={Settings}
                   label="Preferências"
-                  onClick={noop}
+                  onClick={() => history.push("/notificacoes/preferencias")}
                 />
               </div>
             </motion.section>
