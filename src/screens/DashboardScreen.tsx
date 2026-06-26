@@ -9,6 +9,7 @@ import { OrbBackground } from "../components/OrbBackground";
 import { captureEvent } from "../lib/posthog";
 import { computeFocusSeconds, sortByScheduledTime } from "../lib/day-stats";
 import { DAILY_GOAL_MINUTES, useTasks } from "../lib/tasks-context";
+import { useProfile } from "../lib/profile-context";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -21,6 +22,7 @@ export function DashboardScreen() {
   const history = useHistory();
   const location = useLocation();
   const { tasks, changeStatus, editTask, deleteTask } = useTasks();
+  const { profile } = useProfile();
   const taskRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const highlightTaskId = useMemo(() => {
@@ -91,7 +93,12 @@ export function DashboardScreen() {
         <OrbBackground />
 
         <div className="relative z-10 min-h-screen pb-32 md:mx-auto md:max-w-xl">
-          <HeaderBar greeting={getGreeting()} userName="Alex" />
+          <HeaderBar
+            greeting={getGreeting()}
+            userName={profile.displayName}
+            avatarSeed={profile.avatarSeed}
+            avatarStyle={profile.avatarStyle}
+          />
 
           <div className="px-4 space-y-6">
             {/* Active session section */}
