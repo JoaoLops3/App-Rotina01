@@ -22,8 +22,6 @@ import {
   requestNotificationPermission,
 } from "./native-notifications";
 
-const MINUTE = 60;
-
 export const DAILY_GOAL_MINUTES = 300;
 
 interface ActiveSession {
@@ -32,7 +30,10 @@ interface ActiveSession {
   elapsedAtStart: number;
 }
 
-function getWallClockElapsed(task: Task, session: ActiveSession | null): number {
+function getWallClockElapsed(
+  task: Task,
+  session: ActiveSession | null,
+): number {
   if (!session || session.taskId !== task.id || task.status !== "active") {
     return task.elapsed;
   }
@@ -40,77 +41,9 @@ function getWallClockElapsed(task: Task, session: ActiveSession | null): number 
   return Math.min(task.duration, session.elapsedAtStart + delta);
 }
 
-const sampleTasks: Task[] = [
-  {
-    id: "1",
-    title: "Sessão de Trabalho Profundo",
-    category: "Focus",
-    duration: 90 * MINUTE,
-    elapsed: 42 * MINUTE,
-    status: "active",
-    priority: "high",
-    scheduledTime: "09:00",
-  },
-  {
-    id: "2",
-    title: "Revisão de Design",
-    category: "Criativo",
-    duration: 45 * MINUTE,
-    elapsed: 45 * MINUTE,
-    status: "completed",
-    priority: "medium",
-    scheduledTime: "11:00",
-  },
-  {
-    id: "3",
-    title: "Pausa para Meditação",
-    category: "Saúde",
-    duration: 15 * MINUTE,
-    elapsed: 0,
-    status: "pending",
-    priority: "low",
-    scheduledTime: "12:30",
-  },
-  {
-    id: "4",
-    title: "Call Estratégico com Equipe",
-    category: "Comunicação",
-    duration: 30 * MINUTE,
-    elapsed: 0,
-    status: "pending",
-    priority: "high",
-    scheduledTime: "14:00",
-  },
-  {
-    id: "5",
-    title: "Pesquisa e Aprendizado",
-    category: "Focus",
-    duration: 60 * MINUTE,
-    elapsed: 0,
-    status: "pending",
-    priority: "medium",
-  },
-  {
-    id: "6",
-    title: "Treino na Academia",
-    category: "Saúde",
-    duration: 60 * MINUTE,
-    elapsed: 0,
-    status: "pending",
-    priority: "medium",
-    scheduledTime: "18:00",
-  },
-  {
-    id: "7",
-    title: "Planejamento do Dia Seguinte",
-    category: "Focus",
-    duration: 20 * MINUTE,
-    elapsed: 0,
-    status: "pending",
-    priority: "low",
-    scheduledTime: "21:00",
-  },
-];
+function getInitialTasks(): Task[] {
+  return loadTasks() ?? [];
+}
 
 interface TasksContextValue {
   tasks: Task[];
@@ -136,7 +69,7 @@ export function useTasks(): TasksContextValue {
 }
 
 export function TasksProvider({ children }: { children: ReactNode }) {
-  const [tasks, setTasks] = useState<Task[]>(() => loadTasks() ?? sampleTasks);
+  const [tasks, setTasks] = useState<Task[]>(getInitialTasks);
   const [streak, setStreak] = useState(() => computeStreak(loadHistory()));
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -152,7 +85,9 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   const completedRecordedRef = useRef<Set<string>>(
     new Set(
-      sampleTasks.filter((t) => t.status === "completed").map((t) => t.id),
+      getInitialTasks()
+        .filter((t) => t.status === "completed")
+        .map((t) => t.id),
     ),
   );
 
@@ -171,7 +106,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         const active = prev.find((t) => t.status === "active");
         if (!active) return prev;
 
-        const newElapsed = getWallClockElapsed(active, activeSessionRef.current);
+        const newElapsed = getWallClockElapsed(
+          active,
+          activeSessionRef.current,
+        );
         if (newElapsed >= active.duration) {
           activeSessionRef.current = null;
           return prev.map((t) =>
