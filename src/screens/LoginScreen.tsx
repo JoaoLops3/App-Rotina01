@@ -2,8 +2,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useHistory, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
-import { CalendarDays } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
+import { AppLogo } from "../components/AppLogo";
 import { AuthFormField } from "../components/AuthFormField";
 import { useAuth } from "../lib/auth-context";
 import { APP_NAME, APP_TAGLINE } from "../lib/app-brand";
@@ -166,17 +166,13 @@ export function LoginScreen() {
               transition={{ duration: 0.45 }}
               className="flex flex-col items-center text-center pb-5"
             >
-              <div
-                className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-mint-400 to-electric-500 p-0.5 mb-5"
-                style={{ boxShadow: "0 0 40px rgba(52, 211, 153, 0.3)" }}
+              <motion.div
+                className="mb-5"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <div className="w-full h-full rounded-[20px] bg-[#14141c] flex items-center justify-center">
-                  <CalendarDays
-                    className="w-8 h-8 text-mint-400"
-                    strokeWidth={1.75}
-                  />
-                </div>
-              </div>
+                <AppLogo size={64} />
+              </motion.div>
               <h1
                 className="font-display font-bold text-3xl text-white tracking-tight"
                 style={{ fontFamily: "Space Grotesk" }}

@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { Redirect, useLocation } from "react-router-dom";
 import { useAuth, isAuthRoute } from "../lib/auth-context";
+import { AppLogo } from "./AppLogo";
 
 function AuthLoadingScreen() {
   return (
@@ -10,10 +11,7 @@ function AuthLoadingScreen() {
       aria-busy="true"
       aria-label="Carregando"
     >
-      <div
-        className="h-10 w-10 rounded-2xl bg-gradient-to-br from-mint-400 to-electric-500 animate-pulse"
-        style={{ boxShadow: "0 0 30px rgba(52, 211, 153, 0.25)" }}
-      />
+      <AppLogo size={48} className="animate-pulse" />
     </div>
   );
 }
