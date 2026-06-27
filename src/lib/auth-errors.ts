@@ -63,3 +63,11 @@ export function validatePasswordConfirmation(
   if (password !== confirmation) return "As senhas não coincidem.";
   return null;
 }
+
+export function validateDisplayName(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) return "Informe seu nome.";
+  if (trimmed.length < 2) return "O nome deve ter pelo menos 2 caracteres.";
+  if (trimmed.length > 50) return "O nome deve ter no máximo 50 caracteres.";
+  return null;
+}
