@@ -6,7 +6,6 @@ import {
   Bell,
   Settings,
   Lock,
-  Download,
   Trash2,
   LogOut,
   Flame,
@@ -22,8 +21,6 @@ import { useTasks } from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
 import { useAuth } from "../lib/auth-context";
 import { useSync } from "../lib/sync-context";
-import { captureEvent } from "../lib/posthog";
-import { downloadUserDataExport } from "../lib/user-data-export";
 
 interface SettingsRowProps {
   icon: LucideIcon;
@@ -84,11 +81,9 @@ export function ProfileScreen() {
   const history = useHistory();
   const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
   const [isDeleteSheetOpen, setIsDeleteSheetOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [exportError, setExportError] = useState<string | null>(null);
 
   const openAvatarPicker = () => setIsAvatarPickerOpen(true);
 
@@ -99,19 +94,6 @@ export function ProfileScreen() {
       history.replace("/login");
     } finally {
       setIsSigningOut(false);
-    }
-  };
-
-  const handleExport = async () => {
-    setExportError(null);
-    setIsExporting(true);
-    try {
-      await downloadUserDataExport(user?.email ?? null);
-      captureEvent("user data exported", { is_authenticated: isAuthenticated });
-    } catch {
-      setExportError("Não foi possível exportar. Tente novamente.");
-    } finally {
-      setIsExporting(false);
     }
   };
 
@@ -240,11 +222,6 @@ export function ProfileScreen() {
                   onClick={() => history.push("/recuperar-senha")}
                 />
                 <SettingsRow
-                  icon={Download}
-                  label={isExporting ? "Exportando…" : "Exportar meus dados"}
-                  onClick={() => void handleExport()}
-                />
-                <SettingsRow
                   icon={Trash2}
                   label="Excluir conta"
                   danger
@@ -253,9 +230,6 @@ export function ProfileScreen() {
                     setIsDeleteSheetOpen(true);
                   }}
                 />
-                {exportError ? (
-                  <div className="px-5 py-3 text-sm text-coral-400">{exportError}</div>
-                ) : null}
               </div>
             </motion.section>
 
@@ -263,12 +237,13 @@ export function ProfileScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              className="flex justify-center"
             >
               <button
                 type="button"
                 onClick={() => void handleSignOut()}
                 disabled={isSigningOut}
-                className="flex w-full items-center justify-center gap-2 px-5 py-4 rounded-3xl border border-white/10 text-obsidian-200 text-sm font-medium hover:bg-white/[0.04] transition-colors touch-manipulation disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-coral-500/40 bg-coral-500/10 px-6 py-2.5 text-sm font-medium text-coral-400 hover:bg-coral-500/20 transition-colors touch-manipulation disabled:opacity-50"
               >
                 <LogOut className="w-4 h-4" strokeWidth={1.5} />
                 {isSigningOut ? "Saindo…" : "Sair"}
