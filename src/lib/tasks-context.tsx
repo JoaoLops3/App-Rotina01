@@ -1,7 +1,9 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -45,6 +47,22 @@ function getInitialTasks(): Task[] {
   return loadTasks() ?? [];
 }
 
+function applyCompletion(
+  task: Task,
+  status: TaskStatus,
+  extra?: Partial<Task>,
+): Task {
+  if (status === "completed" && !task.completedAt) {
+    return {
+      ...task,
+      ...extra,
+      status,
+      completedAt: new Date().toISOString(),
+    };
+  }
+  return { ...task, ...extra, status };
+}
+
 interface TasksContextValue {
   tasks: Task[];
   streak: number;
@@ -56,6 +74,12 @@ interface TasksContextValue {
   submitTask: (task: Task) => void;
   deleteTask: (id: string) => void;
   changeStatus: (id: string, status: TaskStatus) => void;
+  /**
+   * Tempo decorrido "ao vivo" de uma tarefa: para a tarefa ativa calcula a
+   * partir do relógio de parede sem depender do estado persistido, evitando
+   * re-renders globais a cada segundo.
+   */
+  getLiveElapsed: (task: Task) => number;
 }
 
 const TasksContext = createContext<TasksContextValue | null>(null);
@@ -66,6 +90,26 @@ export function useTasks(): TasksContextValue {
     throw new Error("useTasks deve ser usado dentro de um TasksProvider");
   }
   return ctx;
+}
+
+/**
+ * Atualiza localmente (apenas no componente que chama) o tempo decorrido da
+ * tarefa ativa a cada segundo. Para tarefas não ativas devolve o valor já
+ * persistido sem disparar nenhum timer.
+ */
+export function useActiveElapsed(task: Task | null | undefined): number {
+  const { getLiveElapsed } = useTasks();
+  const [, setTick] = useState(0);
+  const isActive = task?.status === "active";
+  const taskId = task?.id;
+
+  useEffect(() => {
+    if (!isActive) return;
+    const interval = setInterval(() => setTick((tick) => tick + 1), 1000);
+    return () => clearInterval(interval);
+  }, [isActive, taskId]);
+
+  return task ? getLiveElapsed(task) : 0;
 }
 
 export function TasksProvider({ children }: { children: ReactNode }) {
@@ -91,44 +135,52 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     ),
   );
 
-  const appActiveRef = useRef(true);
   const activeSessionRef = useRef<ActiveSession | null>(null);
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
+  const editingTaskIdRef = useRef(editingTaskId);
+  editingTaskIdRef.current = editingTaskId;
+
+  const getLiveElapsed = useCallback(
+    (task: Task) => getWallClockElapsed(task, activeSessionRef.current),
+    [],
+  );
+
+  // Persiste o elapsed da tarefa ativa a partir do relógio de parede. Usado nas
+  // transições de app (background/foreground), ao esconder a aba e na conclusão
+  // automática — nunca a cada segundo.
+  const flushActiveElapsed = useCallback(() => {
+    setTasks((prev) => {
+      const active = prev.find((t) => t.status === "active");
+      if (!active) return prev;
+
+      const newElapsed = getWallClockElapsed(active, activeSessionRef.current);
+      if (newElapsed >= active.duration) {
+        activeSessionRef.current = null;
+        return prev.map((t) =>
+          t.id === active.id
+            ? applyCompletion(t, "completed", { elapsed: t.duration })
+            : t,
+        );
+      }
+      if (newElapsed === active.elapsed) return prev;
+      return prev.map((t) =>
+        t.id === active.id ? { ...t, elapsed: newElapsed } : t,
+      );
+    });
+  }, []);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    const listener = CapApp.addListener("appStateChange", ({ isActive }) => {
-      appActiveRef.current = isActive;
-
-      if (!isActive) return;
-
-      setTasks((prev) => {
-        const active = prev.find((t) => t.status === "active");
-        if (!active) return prev;
-
-        const newElapsed = getWallClockElapsed(
-          active,
-          activeSessionRef.current,
-        );
-        if (newElapsed >= active.duration) {
-          activeSessionRef.current = null;
-          return prev.map((t) =>
-            t.id === active.id
-              ? { ...t, elapsed: t.duration, status: "completed" as TaskStatus }
-              : t,
-          );
-        }
-        if (newElapsed === active.elapsed) return prev;
-        return prev.map((t) =>
-          t.id === active.id ? { ...t, elapsed: newElapsed } : t,
-        );
-      });
+    const listener = CapApp.addListener("appStateChange", () => {
+      flushActiveElapsed();
     });
 
     return () => {
       void listener.then((handle) => handle.remove());
     };
-  }, []);
+  }, [flushActiveElapsed]);
 
   useEffect(() => {
     if (!activeTask) {
@@ -146,43 +198,44 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   }, [activeTask?.id]);
 
   useEffect(() => {
-    saveTasks(tasks);
+    const pruned = saveTasks(tasks);
+    if (pruned.length !== tasks.length) {
+      setTasks(pruned);
+    }
   }, [tasks]);
 
+  // Detecta a conclusão automática da tarefa ativa. O intervalo roda a cada
+  // segundo, mas só toca no estado (re-render global) no instante em que a
+  // tarefa chega ao fim — a contagem visível é feita localmente em cada
+  // componente via useActiveElapsed.
   useEffect(() => {
     if (!activeTask) return;
 
     const interval = setInterval(() => {
-      if (Capacitor.isNativePlatform() && !appActiveRef.current) return;
-
-      setTasks((prevTasks) =>
-        prevTasks.map((task) => {
-          if (task.id !== activeTask.id || task.status !== "active") {
-            return task;
-          }
-
-          const newElapsed = getWallClockElapsed(
-            task,
-            activeSessionRef.current,
-          );
-          if (newElapsed >= task.duration) {
-            activeSessionRef.current = null;
-            return {
-              ...task,
-              elapsed: task.duration,
-              status: "completed" as TaskStatus,
-            };
-          }
-          if (newElapsed !== task.elapsed) {
-            return { ...task, elapsed: newElapsed };
-          }
-          return task;
-        }),
-      );
+      const elapsed = getWallClockElapsed(activeTask, activeSessionRef.current);
+      if (elapsed >= activeTask.duration) {
+        flushActiveElapsed();
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeTask]);
+  }, [activeTask, flushActiveElapsed]);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) return;
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") flushActiveElapsed();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("pagehide", flushActiveElapsed);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("pagehide", flushActiveElapsed);
+    };
+  }, [flushActiveElapsed]);
 
   useEffect(() => {
     const history = recordToday({
@@ -212,12 +265,12 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     });
   }, [tasks]);
 
-  const submitTask = (task: Task) => {
+  const submitTask = useCallback((task: Task) => {
     if (task.scheduledTime) {
       void requestNotificationPermission();
     }
 
-    if (editingTaskId) {
+    if (editingTaskIdRef.current) {
       setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
       captureEvent("task edited", {
         task_id: task.id,
@@ -238,25 +291,25 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       task_duration_minutes: Math.floor(task.duration / 60),
       has_scheduled_time: Boolean(task.scheduledTime),
     });
-  };
+  }, []);
 
-  const openNewTask = () => {
+  const openNewTask = useCallback(() => {
     setEditingTaskId(null);
     setIsNewTaskOpen(true);
-  };
+  }, []);
 
-  const editTask = (id: string) => {
+  const editTask = useCallback((id: string) => {
     setEditingTaskId(id);
     setIsNewTaskOpen(true);
-  };
+  }, []);
 
-  const closeTaskSheet = () => {
+  const closeTaskSheet = useCallback(() => {
     setIsNewTaskOpen(false);
     setEditingTaskId(null);
-  };
+  }, []);
 
-  const deleteTask = (id: string) => {
-    const target = tasks.find((t) => t.id === id);
+  const deleteTask = useCallback((id: string) => {
+    const target = tasksRef.current.find((t) => t.id === id);
     completedRecordedRef.current.delete(id);
     void cancelTaskNotifications(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -268,14 +321,16 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         task_status: target.status,
       });
     }
-  };
+  }, []);
 
-  const changeStatus = (id: string, newStatus: TaskStatus) => {
-    const task = tasks.find((t) => t.id === id);
-    let pausedElapsed: number | undefined;
+  const changeStatus = useCallback((id: string, newStatus: TaskStatus) => {
+    const task = tasksRef.current.find((t) => t.id === id);
+    const leavingActive = task?.status === "active" && newStatus !== "active";
+    const flushedElapsed = leavingActive
+      ? getWallClockElapsed(task!, activeSessionRef.current)
+      : undefined;
 
     if (newStatus === "paused" && task?.status === "active") {
-      pausedElapsed = getWallClockElapsed(task, activeSessionRef.current);
       void cancelTaskNotifications(id);
     }
 
@@ -296,10 +351,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     setTasks((prev) => {
       const updated = prev.map((t) => {
         if (t.id !== id) return t;
-        if (newStatus === "paused" && pausedElapsed !== undefined) {
-          return { ...t, status: newStatus, elapsed: pausedElapsed };
+        if (flushedElapsed !== undefined) {
+          return applyCompletion(t, newStatus, { elapsed: flushedElapsed });
         }
-        return { ...t, status: newStatus };
+        return applyCompletion(t, newStatus);
       });
 
       if (newStatus === "active") {
@@ -313,20 +368,36 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       }
       return updated;
     });
-  };
+  }, []);
 
-  const value: TasksContextValue = {
-    tasks,
-    streak,
-    isNewTaskOpen,
-    taskToEdit,
-    openNewTask,
-    editTask,
-    closeTaskSheet,
-    submitTask,
-    deleteTask,
-    changeStatus,
-  };
+  const value = useMemo<TasksContextValue>(
+    () => ({
+      tasks,
+      streak,
+      isNewTaskOpen,
+      taskToEdit,
+      openNewTask,
+      editTask,
+      closeTaskSheet,
+      submitTask,
+      deleteTask,
+      changeStatus,
+      getLiveElapsed,
+    }),
+    [
+      tasks,
+      streak,
+      isNewTaskOpen,
+      taskToEdit,
+      openNewTask,
+      editTask,
+      closeTaskSheet,
+      submitTask,
+      deleteTask,
+      changeStatus,
+      getLiveElapsed,
+    ],
+  );
 
   return (
     <TasksContext.Provider value={value}>{children}</TasksContext.Provider>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { useHistory, useLocation } from "react-router-dom";
 import { HeaderBar } from "../components/HeaderBar";
@@ -8,7 +8,11 @@ import { ProgressRing } from "../components/ProgressRing";
 import { OrbBackground } from "../components/OrbBackground";
 import { captureEvent } from "../lib/posthog";
 import { computeFocusSeconds, sortByScheduledTime } from "../lib/day-stats";
-import { DAILY_GOAL_MINUTES, useTasks } from "../lib/tasks-context";
+import {
+  DAILY_GOAL_MINUTES,
+  useActiveElapsed,
+  useTasks,
+} from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
 
 function getGreeting(): string {
@@ -66,18 +70,23 @@ export function DashboardScreen() {
   );
 
   const activeTask = tasks.find((t) => t.status === "active");
-  const focusSeconds = computeFocusSeconds(tasks);
+  const liveElapsed = useActiveElapsed(activeTask);
+  const focusSeconds = activeTask
+    ? computeFocusSeconds(tasks) - activeTask.elapsed + liveElapsed
+    : computeFocusSeconds(tasks);
   const focusMinutes = Math.floor(focusSeconds / 60);
   const goalHours = Math.round(DAILY_GOAL_MINUTES / 60);
   const sessionProgress = activeTask
-    ? Math.min((activeTask.elapsed / activeTask.duration) * 100, 100)
+    ? Math.min((liveElapsed / activeTask.duration) * 100, 100)
+    : 0;
+  const sessionRemaining = activeTask
+    ? Math.max(activeTask.duration - liveElapsed, 0)
     : 0;
 
   const upcomingTasks = sortByScheduledTime(
     tasks.filter((t) => t.status === "pending"),
   );
   const visibleUpcoming = upcomingTasks.slice(0, 3);
-  const completedTasks = tasks.filter((t) => t.status === "completed");
 
   const handleViewAllTasks = () => {
     captureEvent("view all tasks tapped", {
@@ -128,21 +137,11 @@ export function DashboardScreen() {
                         className="m-0 font-display font-bold text-xl text-white leading-none tabular-nums"
                         style={{ fontFamily: "Space Grotesk" }}
                       >
-                        {String(
-                          Math.floor(
-                            Math.max(
-                              activeTask.duration - activeTask.elapsed,
-                              0,
-                            ) / 60,
-                          ),
-                        ).padStart(2, "0")}
-                        :
-                        {String(
-                          Math.max(
-                            activeTask.duration - activeTask.elapsed,
-                            0,
-                          ) % 60,
-                        ).padStart(2, "0")}
+                        {String(Math.floor(sessionRemaining / 60)).padStart(
+                          2,
+                          "0",
+                        )}
+                        :{String(sessionRemaining % 60).padStart(2, "0")}
                       </p>
                       <p className="m-0 mt-0.5 text-[8px] text-obsidian-500 uppercase tracking-wide leading-none whitespace-nowrap">
                         restando
@@ -240,39 +239,6 @@ export function DashboardScreen() {
                 Ver todas
               </button>
             </motion.section>
-
-            {/* Completed tasks */}
-            {completedTasks.length > 0 && (
-              <motion.section
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <h2
-                    className="font-display font-semibold text-lg text-white"
-                    style={{ fontFamily: "Space Grotesk" }}
-                  >
-                    Concluídas
-                  </h2>
-                  <span className="text-mint-400 text-sm">
-                    {completedTasks.length} feitas
-                  </span>
-                </div>
-                <div className="space-y-3 opacity-60">
-                  {completedTasks.map((task, index) =>
-                    renderTaskCard(task, index),
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={handleViewAllTasks}
-                  className="mt-3 w-full py-3 rounded-2xl text-sm font-medium text-mint-400 bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] transition-colors touch-manipulation"
-                >
-                  Ver todas
-                </button>
-              </motion.section>
-            )}
           </div>
         </div>
       </IonContent>

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { X } from 'lucide-react';
-import type { Task, TaskPriority } from './TaskCard';
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "../lib/motion";
+import { X } from "lucide-react";
+import type { Task, TaskPriority } from "./TaskCard";
 
 interface NewTaskSheetProps {
   isOpen: boolean;
@@ -10,31 +10,36 @@ interface NewTaskSheetProps {
   taskToEdit?: Task | null;
 }
 
-const categories = ['Focus', 'Criativo', 'Saúde', 'Comunicação'] as const;
+const categories = ["Focus", "Criativo", "Saúde", "Comunicação"] as const;
 
 const priorities: { id: TaskPriority; label: string }[] = [
-  { id: 'low', label: 'Baixa' },
-  { id: 'medium', label: 'Média' },
-  { id: 'high', label: 'Alta' },
+  { id: "low", label: "Baixa" },
+  { id: "medium", label: "Média" },
+  { id: "high", label: "Alta" },
 ];
 
 function createId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 const inputClass =
-  'w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-white placeholder:text-obsidian-500 outline-none focus:border-mint-400/50 transition-colors';
+  "w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-white placeholder:text-obsidian-500 outline-none focus:border-mint-400/50 transition-colors";
 
-export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskSheetProps) {
+export function NewTaskSheet({
+  isOpen,
+  onClose,
+  onSubmit,
+  taskToEdit,
+}: NewTaskSheetProps) {
   const isEditing = Boolean(taskToEdit);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>(categories[0]);
-  const [durationMinutes, setDurationMinutes] = useState('30');
-  const [scheduledTime, setScheduledTime] = useState('');
-  const [priority, setPriority] = useState<TaskPriority>('medium');
+  const [durationMinutes, setDurationMinutes] = useState("30");
+  const [scheduledTime, setScheduledTime] = useState("");
+  const [priority, setPriority] = useState<TaskPriority>("medium");
 
   useEffect(() => {
     if (isOpen) {
@@ -42,21 +47,22 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
         setTitle(taskToEdit.title);
         setCategory(taskToEdit.category);
         setDurationMinutes(String(Math.round(taskToEdit.duration / 60)));
-        setScheduledTime(taskToEdit.scheduledTime ?? '');
+        setScheduledTime(taskToEdit.scheduledTime ?? "");
         setPriority(taskToEdit.priority);
       } else {
-        setTitle('');
+        setTitle("");
         setCategory(categories[0]);
-        setDurationMinutes('30');
-        setScheduledTime('');
-        setPriority('medium');
+        setDurationMinutes("30");
+        setScheduledTime("");
+        setPriority("medium");
       }
     }
   }, [isOpen, taskToEdit]);
 
   const trimmedTitle = title.trim();
   const minutes = Number(durationMinutes);
-  const isValid = trimmedTitle.length > 0 && Number.isFinite(minutes) && minutes > 0;
+  const isValid =
+    trimmedTitle.length > 0 && Number.isFinite(minutes) && minutes > 0;
 
   const handleSubmit = () => {
     if (!isValid) return;
@@ -77,7 +83,7 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
           category,
           duration,
           elapsed: 0,
-          status: 'pending',
+          status: "pending",
           priority,
           scheduledTime: scheduledTime || undefined,
         };
@@ -104,17 +110,22 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
 
           <motion.div
             className="relative w-full max-w-lg card-glass rounded-b-none p-5 pb-8"
-            style={{ paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))' }}
-            initial={{ y: '100%' }}
+            style={{
+              paddingBottom: "calc(2rem + env(safe-area-inset-bottom))",
+            }}
+            initial={{ y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 400, damping: 36 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 400, damping: 36 }}
           >
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/15" />
 
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display font-semibold text-xl text-white" style={{ fontFamily: 'Space Grotesk' }}>
-                {isEditing ? 'Editar tarefa' : 'Nova tarefa'}
+              <h2
+                className="font-display font-semibold text-xl text-white"
+                style={{ fontFamily: "Space Grotesk" }}
+              >
+                {isEditing ? "Editar tarefa" : "Nova tarefa"}
               </h2>
               <button
                 type="button"
@@ -128,13 +139,15 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">Título</label>
+                <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
+                  Título
+                </label>
                 <input
                   autoFocus
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSubmit();
+                    if (e.key === "Enter") handleSubmit();
                   }}
                   placeholder="Ex.: Sessão de trabalho profundo"
                   className={inputClass}
@@ -142,7 +155,9 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
               </div>
 
               <div>
-                <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">Categoria</label>
+                <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
+                  Categoria
+                </label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => (
                     <button
@@ -151,8 +166,8 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
                       onClick={() => setCategory(cat)}
                       className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors touch-manipulation ${
                         category === cat
-                          ? 'bg-mint-500/20 text-mint-400 border border-mint-500/40'
-                          : 'bg-white/[0.04] text-obsidian-300 border border-white/10 hover:bg-white/[0.08]'
+                          ? "bg-mint-500/20 text-mint-400 border border-mint-500/40"
+                          : "bg-white/[0.04] text-obsidian-300 border border-white/10 hover:bg-white/[0.08]"
                       }`}
                     >
                       {cat}
@@ -163,7 +178,9 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
 
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">Duração (min)</label>
+                  <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
+                    Duração (min)
+                  </label>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -174,7 +191,9 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
                   />
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">Horário</label>
+                  <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
+                    Horário
+                  </label>
                   <input
                     type="time"
                     value={scheduledTime}
@@ -185,7 +204,9 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
               </div>
 
               <div>
-                <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">Prioridade</label>
+                <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
+                  Prioridade
+                </label>
                 <div className="flex gap-2">
                   {priorities.map((p) => (
                     <button
@@ -194,8 +215,8 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
                       onClick={() => setPriority(p.id)}
                       className={`flex-1 px-3 py-2 rounded-xl text-sm font-medium transition-colors touch-manipulation ${
                         priority === p.id
-                          ? 'bg-mint-500/20 text-mint-400 border border-mint-500/40'
-                          : 'bg-white/[0.04] text-obsidian-300 border border-white/10 hover:bg-white/[0.08]'
+                          ? "bg-mint-500/20 text-mint-400 border border-mint-500/40"
+                          : "bg-white/[0.04] text-obsidian-300 border border-white/10 hover:bg-white/[0.08]"
                       }`}
                     >
                       {p.label}
@@ -210,7 +231,7 @@ export function NewTaskSheet({ isOpen, onClose, onSubmit, taskToEdit }: NewTaskS
                 disabled={!isValid}
                 className="btn-primary w-full mt-2 disabled:opacity-40 disabled:cursor-not-allowed touch-manipulation"
               >
-                {isEditing ? 'Salvar alterações' : 'Adicionar tarefa'}
+                {isEditing ? "Salvar alterações" : "Adicionar tarefa"}
               </button>
             </div>
           </motion.div>

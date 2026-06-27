@@ -41,6 +41,7 @@ export function Avatar({
         <img
           src={url}
           alt={alt}
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover"
           style={{ opacity: status === "loaded" ? 1 : 0 }}
           onLoad={() => setStatus("loaded")}
