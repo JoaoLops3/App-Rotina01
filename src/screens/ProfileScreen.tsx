@@ -189,9 +189,9 @@ export function ProfileScreen() {
                 </p>
               ) : (
                 <p className="text-obsidian-500 text-sm mt-1">
-                  Construindo uma rotina melhor,
+                  Um dia de cada vez,
                   <br />
-                  um dia de cada vez.
+                  no trilho.
                 </p>
               )}
               <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">

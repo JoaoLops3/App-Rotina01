@@ -1,2 +1,2 @@
--- App-Rotina: sem seed de produção.
+-- Trilho: sem seed de produção.
 -- Dados de demo/teste devem ser criados pelo app ou scripts locais, nunca commitados com PII.

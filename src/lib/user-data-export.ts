@@ -1,16 +1,12 @@
+import { APP_NAME } from "./app-brand";
 import { loadHistory } from "./day-stats";
 import { loadNotifications } from "./notification-storage";
 import { loadPreferences } from "./notification-preferences";
 import { loadProfile } from "./profile-storage";
 import { loadTasks } from "./storage";
+import { ALL_STORAGE_KEYS } from "./storage-keys";
 
-export const LOCAL_STORAGE_KEYS = [
-  "app-rotina:tasks",
-  "app-rotina:history",
-  "app-rotina:profile",
-  "app-rotina:notifications",
-  "app-rotina:notification-preferences",
-] as const;
+export const LOCAL_STORAGE_KEYS = ALL_STORAGE_KEYS;
 
 export function clearAllLocalAppData(): void {
   for (const key of LOCAL_STORAGE_KEYS) {
@@ -24,7 +20,7 @@ export function clearAllLocalAppData(): void {
 
 export interface UserDataExportPayload {
   exportedAt: string;
-  app: "App Rotina";
+  app: typeof APP_NAME;
   version: "1.0";
   accountEmail: string | null;
   tasks: ReturnType<typeof loadTasks>;
@@ -39,7 +35,7 @@ export function buildUserDataExport(
 ): UserDataExportPayload {
   return {
     exportedAt: new Date().toISOString(),
-    app: "App Rotina",
+    app: APP_NAME,
     version: "1.0",
     accountEmail: accountEmail ?? null,
     tasks: loadTasks() ?? [],
@@ -55,13 +51,13 @@ export async function downloadUserDataExport(
 ): Promise<void> {
   const payload = buildUserDataExport(accountEmail);
   const json = JSON.stringify(payload, null, 2);
-  const filename = `app-rotina-dados-${new Date().toISOString().slice(0, 10)}.json`;
+  const filename = `trilho-dados-${new Date().toISOString().slice(0, 10)}.json`;
 
   if (typeof navigator !== "undefined" && navigator.share) {
     try {
       const file = new File([json], filename, { type: "application/json" });
       await navigator.share({
-        title: "Exportar dados — App Rotina",
+        title: `Exportar dados — ${APP_NAME}`,
         files: [file],
       });
       return;

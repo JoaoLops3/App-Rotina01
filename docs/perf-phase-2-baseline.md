@@ -48,9 +48,9 @@ Validar com React DevTools Profiler em QA manual.
 
 | Chave | Política pós-Fase 2 |
 |-------|---------------------|
-| `app-rotina:tasks` | Poda automática: `completed` com `completedAt` &gt; 14 dias removidas |
+| `trilho:tasks` | Poda automática: `completed` com `completedAt` &gt; 14 dias removidas |
 | Legado sem `completedAt` | Mantidas até nova conclusão |
-| `app-rotina:history` | 90 dias (inalterado) |
+| `trilho:history` | 90 dias (inalterado) |
 
 ## Mobile / GPU
 
@@ -70,5 +70,5 @@ npm run build
 
 # FCP: Chrome DevTools → Performance → mobile throttled
 # Profiler: React DevTools → Profiler → pausar tarefa com 20 cards
-# localStorage: Application → Local Storage → app-rotina:tasks
+# localStorage: Application → Local Storage → trilho:tasks
 ```

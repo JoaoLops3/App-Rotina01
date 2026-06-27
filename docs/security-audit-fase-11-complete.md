@@ -9,7 +9,7 @@
 
 ## Resumo executivo
 
-App-Rotina passou de frontend-only para **auth + sync na nuvem**. Auditoria alinhada ao plano [`importância_auditoria_segurança`](../.cursor/plans/importância_auditoria_segurança_e5733fa0.plan.md) e ao gate em `.cursor/plans/auditoria_supabase_gate.prompt.md`.
+Trilho passou de frontend-only para **auth + sync na nuvem**. Auditoria alinhada ao plano [`importância_auditoria_segurança`](../.cursor/plans/importância_auditoria_segurança_e5733fa0.plan.md) e ao gate em `.cursor/plans/auditoria_supabase_gate.prompt.md`.
 
 ---
 

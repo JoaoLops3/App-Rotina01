@@ -1,4 +1,4 @@
-# Supabase — App Rotina
+# Supabase — Trilho
 
 Backend completo para auth, sync multi-dispositivo e persistência na nuvem.
 
@@ -43,11 +43,11 @@ Detalhes de conflito/offline: [`docs/sync-behavior.md`](./sync-behavior.md)
 
 | localStorage / app | Tabela Postgres | Ownership |
 |--------------------|-----------------|-----------|
-| `app-rotina:tasks` | `public.tasks` | `user_id = auth.uid()` |
-| `app-rotina:history` | `public.day_history` | PK `(user_id, date)` |
-| `app-rotina:profile` | `public.profiles` | `id = auth.uid()` |
-| `app-rotina:notification-preferences` | `public.notification_preferences` | `user_id = auth.uid()` |
-| `app-rotina:notifications` | `public.notifications` | `user_id = auth.uid()` |
+| `trilho:tasks` | `public.tasks` | `user_id = auth.uid()` |
+| `trilho:history` | `public.day_history` | PK `(user_id, date)` |
+| `trilho:profile` | `public.profiles` | `id = auth.uid()` |
+| `trilho:notification-preferences` | `public.notification_preferences` | `user_id = auth.uid()` |
+| `trilho:notifications` | `public.notifications` | `user_id = auth.uid()` |
 
 ### Enums (espelham TypeScript)
 

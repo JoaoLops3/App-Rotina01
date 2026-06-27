@@ -6,6 +6,7 @@ import { CalendarDays } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
 import { AuthFormField } from "../components/AuthFormField";
 import { useAuth } from "../lib/auth-context";
+import { APP_NAME, APP_TAGLINE } from "../lib/app-brand";
 import {
   validateEmail,
   validatePassword,
@@ -180,11 +181,10 @@ export function LoginScreen() {
                 className="font-display font-bold text-3xl text-white tracking-tight"
                 style={{ fontFamily: "Space Grotesk" }}
               >
-                App Rotina
+                {APP_NAME}
               </h1>
               <p className="mt-2 text-sm text-obsidian-400 max-w-[260px] leading-relaxed">
-                Organize seu dia, acompanhe seu progresso e leve sua rotina para
-                qualquer lugar.
+                {APP_TAGLINE}
               </p>
             </motion.header>
 

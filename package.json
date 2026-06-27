@@ -1,5 +1,5 @@
 {
-  "name": "app-rotina",
+  "name": "trilho",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -52,5 +52,5 @@
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
   },
-  "description": "App Rotina — Ionic 8 + Capacitor + React"
+  "description": "Trilho — Ionic 8 + Capacitor + React"
 }

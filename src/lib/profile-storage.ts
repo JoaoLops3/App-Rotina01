@@ -1,6 +1,8 @@
 import type { UserProfile } from "../types/avatar";
 
-const STORAGE_KEY = "app-rotina:profile";
+import { STORAGE_KEYS } from "./storage-keys";
+
+const STORAGE_KEY = STORAGE_KEYS.profile;
 
 const DEFAULT_PROFILE: UserProfile = {
   displayName: "Alex",

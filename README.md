@@ -1,4 +1,4 @@
-# App-Rotina
+# Trilho
 
 App de rotina diária — Ionic 8 + Capacitor + React.
 

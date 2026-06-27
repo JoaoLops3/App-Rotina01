@@ -1,6 +1,8 @@
 import type { Task } from "../components/TaskCard";
 
-const STORAGE_KEY = "app-rotina:tasks";
+import { STORAGE_KEYS } from "./storage-keys";
+
+const STORAGE_KEY = STORAGE_KEYS.tasks;
 
 export const COMPLETED_RETENTION_DAYS = 14;
 

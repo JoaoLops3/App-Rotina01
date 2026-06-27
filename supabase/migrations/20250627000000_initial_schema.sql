@@ -1,4 +1,4 @@
--- App-Rotina initial schema: profiles, tasks, history, notifications + RLS
+-- Trilho initial schema: profiles, tasks, history, notifications + RLS
 
 -- ---------------------------------------------------------------------------
 -- Enums

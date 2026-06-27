@@ -1,4 +1,4 @@
-# Comportamento de sync — App Rotina (Fase 11.3)
+# Comportamento de sync — Trilho (Fase 11.3)
 
 ## Modos
 

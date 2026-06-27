@@ -1,6 +1,8 @@
 import type { AppNotification } from "../types/notification";
 
-const STORAGE_KEY = "app-rotina:notifications";
+import { STORAGE_KEYS } from "./storage-keys";
+
+const STORAGE_KEY = STORAGE_KEYS.notifications;
 const MAX_ITEMS = 50;
 
 export function loadNotifications(): AppNotification[] {

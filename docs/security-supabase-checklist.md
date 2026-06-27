@@ -1,4 +1,4 @@
-# Checklist de segurança — Supabase (App-Rotina)
+# Checklist de segurança — Supabase (Trilho)
 
 Regras obrigatórias antes de merge na `main` e antes de releases com dados na nuvem.
 

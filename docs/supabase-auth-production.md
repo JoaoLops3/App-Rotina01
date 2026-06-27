@@ -49,7 +49,7 @@ Sem essa variável, o app usa `window.location.origin` (ok em dev).
 
 ## Capacitor (iOS/Android)
 
-O app id é `com.joaolops3.approtina`. Para deep links de auth no nativo:
+O app id é `com.joaolops3.trilho`. Para deep links de auth no nativo:
 
 1. Configure **Universal Links** (iOS) / **App Links** (Android) apontando para `https://SEU-DOMINIO.com/*`
 2. Mantenha `capacitor://localhost/login` como fallback de dev

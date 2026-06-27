@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.joaolops3.approtina",
-  appName: "App Rotina",
+  appId: "com.joaolops3.trilho",
+  appName: "Trilho",
   webDir: "dist",
   backgroundColor: "#0d0d12",
   server: {

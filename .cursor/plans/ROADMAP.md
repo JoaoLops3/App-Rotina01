@@ -1,11 +1,11 @@
-# Roadmap — Núcleo Funcional do App-Rotina
+# Roadmap — Núcleo Funcional do Trilho
 
 > Origem: veredito do conselho (`/council`). O app hoje é uma casca bonita: tarefas
 > hardcoded, nada persiste, stats falsas, só 1 tela. Antes de qualquer polimento novo,
 > construir o **loop básico**: criar → concluir → persistir.
 >
-> Regra de ouro: faça **uma fase por vez**, do topo pra baixo. Não pule pra Supabase/UI
-> nova enquanto o loop local não estiver de pé.
+> Regra de ouro: faça **uma fase por vez**, do topo pra baixo. Fases 1–10 e a maior
+> parte da **11** já estão na `main`; siga com o que falta na 11.3 ou avance para a 12.
 
 ---
 
@@ -102,7 +102,7 @@
 
 - [x] Rota `/notificacoes` + `NotificationsScreen` (inbox agrupada Hoje/Ontem/Anteriores)
 - [x] Tipos: `task_upcoming` (~10 min antes), `task_completed`, `daily_goal_reached`, `streak_milestone`, `streak_at_risk`
-- [x] Persistência em `localStorage` (`app-rotina:notifications`) com `dedupKey`
+- [x] Persistência em `localStorage` (`trilho:notifications`) com `dedupKey`
 - [x] Polling 60s para lembretes de tarefas agendadas (app aberto)
 - [x] Sino no `HeaderBar` → navega + badge coral só com não lidas
 - [x] Perfil → linha Notificações → mesma tela
@@ -150,7 +150,7 @@
 
 ### Visual / identidade
 
-- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo App Rotina (asset no Xcode / `AppIcon`) — *adiado → Fase 11*
+- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo Trilho (asset no Xcode / `AppIcon`) — *adiado → Fase 11*
 - [ ] **Ícone do push no Android** — `smallIcon` em `res/drawable` + `capacitor.config.ts` (quando pasta `android/` voltar ao repo) — *adiado → Fase 11*
 
 ### Push nativo — tipos que hoje são só in-app
@@ -178,7 +178,7 @@
 **Objetivo:** o usuário escolhe um avatar DiceBear (toon-head) no Perfil; a escolha persiste localmente e aparece no header.
 
 - [x] Types (`src/types/avatar.ts`) e `buildAvatarUrl` (DiceBear com `backgroundColor`).
-- [x] `profile-storage.ts` + `ProfileProvider` / `useProfile()` (`app-rotina:profile`).
+- [x] `profile-storage.ts` + `ProfileProvider` / `useProfile()` (`trilho:profile`).
 - [x] Componentes `Avatar`, `AvatarPicker`, `AvatarPickerSheet` (portal no `body`).
 - [x] Hook `useUpdateAvatar` (localStorage hoje; contrato pronto para Supabase).
 - [x] Integração: `ProfileScreen` (avatar clicável + atalho), `HeaderBar`, `DashboardScreen`, `App.tsx`.
@@ -248,55 +248,61 @@
 
 ---
 
-## Fase 11 — Login, conta e sync na nuvem (Supabase)
+## Fase 11 — Login, conta e sync na nuvem (Supabase) 🔄
 
-> Só depois que o loop local, notificações e perfil estiverem sólidos.  
-> **Dividida em 3 etapas** — faça **11.1 → 11.2 → 11.3** na ordem.
+> **Dividida em 3 etapas** — **11.1 ✅ · 11.2 ✅ · 11.3 quase completa** (falta push remoto e ícones).
 
 **Objetivo:** o usuário tem conta, dados na nuvem e continuidade ao trocar de aparelho.
 
-**Pronto quando (fim da 11.3):** crio conta no celular A, adiciono tarefas, faço login no celular B → vejo as mesmas tarefas e perfil.
+**Pronto quando (fim da 11.3):** crio conta no celular A, adiciono tarefas, faço login no celular B → vejo as mesmas tarefas e perfil. *(Fluxo core já funciona; push remoto e ícones nativos ainda pendentes.)*
 
-### Fase 11.1 — Preparação e schema Supabase
+### Fase 11.1 — Preparação e schema Supabase ✅
 
-- [ ] Higiene: `.env.example`, checklist de segurança, histórico git limpo.
-- [ ] `supabase init`, migrations, RLS em todas as tabelas.
-- [ ] `src/lib/supabase.ts` (anon key only).
-- [ ] Gate de auditoria pós-migration (zero CRITICAL/HIGH).
+- [x] Higiene: `.env.example`, checklist de segurança, CI secret-scan (gitleaks).
+- [x] `supabase init`, migrations, RLS em todas as tabelas.
+- [x] `src/lib/supabase.ts` (anon key only) + tipos `src/types/database.ts`.
+- [x] Gate de auditoria pós-migration (zero CRITICAL/HIGH no Security Advisor).
 
-**Plano:** [`fase_11_1_preparacao_schema_rls.plan.md`](./fase_11_1_preparacao_schema_rls.plan.md)
+**Plano:** [`fase_11_1_preparacao_schema_rls.plan.md`](./fase_11_1_preparacao_schema_rls.plan.md)  
+**Docs:** `docs/security-supabase-checklist.md`, `docs/security-audit-fase-11-1.md`
 
-### Fase 11.2 — Auth (login e conta)
+### Fase 11.2 — Auth (login e conta) ✅
 
-- [ ] Telas login/cadastro + AuthProvider + sessão Capacitor.
-- [ ] Perfil: entrar/sair, email; PostHog identify.
-- [ ] App local continua para guest — **sem sync ainda**.
+- [x] Tela de boas-vindas unificada (`/login`) — Entrar | Criar conta, sem scroll, toggle de senha.
+- [x] `AuthProvider` + `AuthGate` — login como 1ª tela quando Supabase configurado.
+- [x] Recuperar senha (`/recuperar-senha`) + deep links Capacitor (`auth-deeplink.ts`).
+- [x] Perfil: email, sair → login, exportar dados, excluir conta (RPC `delete_own_account`).
+- [x] PostHog `identify` / `reset`; erros auth em PT-BR.
+- [x] Privacidade PostHog — `taskAnalyticsProps()` sem `task_title`.
+- [x] Redirects de produção — `VITE_APP_URL`, `docs/supabase-auth-production.md`.
 
 **Plano:** [`fase_11_2_auth_login_conta.plan.md`](./fase_11_2_auth_login_conta.plan.md)
 
-### Fase 11.3 — Sync na nuvem e multi-dispositivo
+### Fase 11.3 — Sync na nuvem e multi-dispositivo 🔄
 
-- [ ] Migrar persistência (`localStorage` → Supabase quando logado).
-- [ ] Import local na criação da conta ("usar o que já tenho neste aparelho").
-- [ ] Sync multi-dispositivo (tarefas, histórico, perfil, avatar, prefs).
-- [ ] Inbox de notificações na nuvem + push remoto (Edge Functions).
-- [ ] Ícones push iOS/Android + `daily_goal_reached` / `streak_milestone` (adiados da 8.5).
+- [x] Persistência híbrida — `localStorage` + push/pull Supabase quando logado (`sync-context`).
+- [x] Import local no 1º login (`ImportLocalDataSheet` — "usar o que já tenho neste aparelho").
+- [x] Sync multi-dispositivo — tarefas, histórico, perfil/avatar, prefs, inbox in-app.
+- [ ] **Push remoto (Edge Functions + FCM/APNs)** — adiado; push nativo continua por dispositivo.
+- [ ] Ícones push iOS/Android + `daily_goal_reached` / `streak_milestone` nativos (adiados da 8.5).
 
-**Plano:** [`fase_11_3_sync_nuvem_multidispositivo.plan.md`](./fase_11_3_sync_nuvem_multidispositivo.plan.md)
+**Plano:** [`fase_11_3_sync_nuvem_multidispositivo.plan.md`](./fase_11_3_sync_nuvem_multidispositivo.plan.md)  
+**Docs:** `docs/sync-behavior.md`, `docs/supabase.md`, `docs/security-audit-fase-11-complete.md`
 
-**Arquivos (previstos):** `src/lib/supabase.ts`, `src/lib/auth-context.tsx`, migrations `supabase/`, telas de auth, camada de sync sobre `storage.ts` / `profile-storage.ts`
+**Arquivos:** `src/lib/supabase.ts`, `src/lib/auth-context.tsx`, `src/lib/sync-context.tsx`, `src/lib/sync/*`, migrations `supabase/`, telas auth, `ImportLocalDataSheet.tsx`  
+**Commit:** `27d30c9` — `feat: Fase 11 — Supabase, auth, sync e preparação pré-loja`
 
 ---
 
 ## Fase 12 — Rotinas prontas (foco em acolhimento / TDAH)
 
-> **Depois da Fase 11** — roda após login/criação de conta, não antes.
+> **Depois da Fase 11** — onboarding de rotinas **após** login (a tela de login/cadastro já existe na 11.2).
 
 **Objetivo:** quem acabou de criar conta não enfrenta lista vazia. Oferecer rotinas prontas, pensadas para quem tem dificuldade com foco e organização (incl. público com TDAH), com sensação de acolhimento e capacidade real de manter uma rotina.
 
 ### Fluxo (pós-login / pós-cadastro)
 
-- [ ] Tela de boas-vindas após criar conta (ou 1º login) — "Vamos montar sua rotina".
+- [ ] Tela de onboarding de rotina após 1º login com conta vazia — "Vamos montar sua rotina".
 - [ ] Perguntas curtas (3–5): foco principal (estudos, trabalho, saúde, equilíbrio/lazer), intensidade (leve vs completa).
 - [ ] Preview da rotina sugerida antes de confirmar.
 - [ ] Opção **"Começar do zero"** sempre visível — ninguém é obrigado ao template.
@@ -345,7 +351,7 @@
 
 ### Como trabalhar
 
-> **Status atual:** Fases 1–10 concluídas na `main`. **Próxima etapa aberta:** **Fase 11.1** — preparação, schema Supabase e RLS ([plano](./fase_11_1_preparacao_schema_rls.plan.md)).
+> **Status atual:** Fases 1–10 e **11.1 + 11.2** concluídas na `main`. **11.3** em andamento — falta push remoto e ícones nativos. **Próxima etapa aberta:** fechar 11.3 ou iniciar **Fase 12** (rotinas prontas).
 
 1. Pegue **a fase mais ao topo ainda aberta**.
 2. Faça os checkboxes dela.

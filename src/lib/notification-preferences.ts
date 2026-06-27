@@ -1,4 +1,5 @@
 import type { NotificationType } from "../types/notification";
+import { STORAGE_KEYS } from "./storage-keys";
 
 export type LeadMinutes = 5 | 10 | 15;
 
@@ -7,7 +8,7 @@ export interface NotificationPreferences {
   enabled: Record<NotificationType, boolean>;
 }
 
-const STORAGE_KEY = "app-rotina:notification-preferences";
+const STORAGE_KEY = STORAGE_KEYS.notificationPreferences;
 
 export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   task_upcoming: "Lembrete de tarefa agendada",

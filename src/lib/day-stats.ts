@@ -1,6 +1,8 @@
 import type { Task } from '../components/TaskCard';
 
-const HISTORY_KEY = 'app-rotina:history';
+import { STORAGE_KEYS } from "./storage-keys";
+
+const HISTORY_KEY = STORAGE_KEYS.history;
 const HISTORY_MAX_DAYS = 90;
 
 /** Estatísticas consolidadas de um dia (datas em horário local, formato YYYY-MM-DD). */
