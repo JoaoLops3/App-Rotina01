@@ -250,22 +250,41 @@
 
 ## Fase 11 — Login, conta e sync na nuvem (Supabase)
 
-> Só depois que o loop local, notificações e perfil estiverem sólidos.
+> Só depois que o loop local, notificações e perfil estiverem sólidos.  
+> **Dividida em 3 etapas** — faça **11.1 → 11.2 → 11.3** na ordem.
 
 **Objetivo:** o usuário tem conta, dados na nuvem e continuidade ao trocar de aparelho.
 
-- [ ] Auth — telas de login e criação de conta.
-- [ ] Migrar persistência de `localStorage` para Supabase (tarefas, histórico, perfil, preferências).
-- [ ] **Sync ao trocar de celular** — mesma conta, mesmos dados em qualquer dispositivo (tarefas, histórico, perfil, avatar).
-- [ ] Importar dados locais na criação da conta ("usar o que já tenho neste aparelho").
-- [ ] **Sync de notificações entre dispositivos** (inbox unificada na nuvem).
-- [ ] **Notificações remotas (servidor)** — push via backend/Supabase Edge Functions.
-- [ ] Ícones customizados do push (iOS + Android) — itens adiados da Fase 8.5.
-- [ ] Push nativo `daily_goal_reached` e `streak_milestone` — itens adiados da Fase 8.5.
+**Pronto quando (fim da 11.3):** crio conta no celular A, adiciono tarefas, faço login no celular B → vejo as mesmas tarefas e perfil.
 
-**Pronto quando:** crio conta no celular A, adiciono tarefas, faço login no celular B → vejo as mesmas tarefas e perfil.
+### Fase 11.1 — Preparação e schema Supabase
 
-**Arquivos (previstos):** `src/lib/supabase.ts`, migrations `supabase/`, telas de auth, camada de sync sobre `storage.ts` / `profile-storage.ts`
+- [ ] Higiene: `.env.example`, checklist de segurança, histórico git limpo.
+- [ ] `supabase init`, migrations, RLS em todas as tabelas.
+- [ ] `src/lib/supabase.ts` (anon key only).
+- [ ] Gate de auditoria pós-migration (zero CRITICAL/HIGH).
+
+**Plano:** [`fase_11_1_preparacao_schema_rls.plan.md`](./fase_11_1_preparacao_schema_rls.plan.md)
+
+### Fase 11.2 — Auth (login e conta)
+
+- [ ] Telas login/cadastro + AuthProvider + sessão Capacitor.
+- [ ] Perfil: entrar/sair, email; PostHog identify.
+- [ ] App local continua para guest — **sem sync ainda**.
+
+**Plano:** [`fase_11_2_auth_login_conta.plan.md`](./fase_11_2_auth_login_conta.plan.md)
+
+### Fase 11.3 — Sync na nuvem e multi-dispositivo
+
+- [ ] Migrar persistência (`localStorage` → Supabase quando logado).
+- [ ] Import local na criação da conta ("usar o que já tenho neste aparelho").
+- [ ] Sync multi-dispositivo (tarefas, histórico, perfil, avatar, prefs).
+- [ ] Inbox de notificações na nuvem + push remoto (Edge Functions).
+- [ ] Ícones push iOS/Android + `daily_goal_reached` / `streak_milestone` (adiados da 8.5).
+
+**Plano:** [`fase_11_3_sync_nuvem_multidispositivo.plan.md`](./fase_11_3_sync_nuvem_multidispositivo.plan.md)
+
+**Arquivos (previstos):** `src/lib/supabase.ts`, `src/lib/auth-context.tsx`, migrations `supabase/`, telas de auth, camada de sync sobre `storage.ts` / `profile-storage.ts`
 
 ---
 
@@ -326,7 +345,7 @@
 
 ### Como trabalhar
 
-> **Status atual:** Fases 1–10 concluídas na `main` (incl. performance Fase 10 antes do backend). **Próxima fase aberta:** Fase 11 — login, conta e sync Supabase.
+> **Status atual:** Fases 1–10 concluídas na `main`. **Próxima etapa aberta:** **Fase 11.1** — preparação, schema Supabase e RLS ([plano](./fase_11_1_preparacao_schema_rls.plan.md)).
 
 1. Pegue **a fase mais ao topo ainda aberta**.
 2. Faça os checkboxes dela.

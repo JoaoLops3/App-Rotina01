@@ -2,11 +2,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
 import type { UserProfile } from "../types/avatar";
 import { loadProfile, saveProfile } from "./profile-storage";
+import { useAuth } from "./auth-context";
+import { useSync } from "./sync-context";
 
 interface ProfileContextValue {
   profile: UserProfile;
@@ -26,11 +29,26 @@ export function useProfile(): ProfileContextValue {
 
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile>(() => loadProfile());
+  const { isAuthenticated } = useAuth();
+  const { registerSyncHandlers, scheduleProfilePush, isApplyingRemote } =
+    useSync();
 
-  const setProfile = useCallback((next: UserProfile) => {
-    setProfileState(next);
-    saveProfile(next);
-  }, []);
+  useEffect(() => {
+    registerSyncHandlers({
+      applyProfile: (next) => setProfileState(next),
+    });
+  }, [registerSyncHandlers]);
+
+  const setProfile = useCallback(
+    (next: UserProfile) => {
+      setProfileState(next);
+      saveProfile(next);
+      if (isAuthenticated && !isApplyingRemote) {
+        scheduleProfilePush(next);
+      }
+    },
+    [isAuthenticated, isApplyingRemote, scheduleProfilePush],
+  );
 
   const refresh = useCallback(() => {
     setProfileState(loadProfile());

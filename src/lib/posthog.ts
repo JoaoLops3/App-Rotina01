@@ -86,3 +86,18 @@ export function captureException(error: unknown): void {
   initPostHog();
   posthog.captureException(error);
 }
+
+export function identifyUser(
+  userId: string,
+  properties?: EventProperties,
+): void {
+  if (!apiKey) return;
+  initPostHog();
+  posthog.identify(userId, properties);
+}
+
+export function resetAnalyticsUser(): void {
+  if (!apiKey) return;
+  initPostHog();
+  posthog.reset();
+}

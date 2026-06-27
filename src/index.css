@@ -156,6 +156,15 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+
+  .ion-content-auth {
+    --overflow: hidden;
+  }
+
+  .ion-content-auth::part(scroll) {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
 }
 
 :root {

@@ -4,16 +4,21 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, useLocation } from "react-router-dom";
 import { Suspense, lazy, useEffect, useMemo } from "react";
 import { DashboardScreen } from "./screens/DashboardScreen";
 import { CustomTabBar } from "./components/CustomTabBar";
 import { NewTaskSheet } from "./components/NewTaskSheet";
 import { NativeNotificationBridge } from "./components/NativeNotificationBridge";
 import { TasksProvider, useTasks } from "./lib/tasks-context";
+import { AuthProvider, isAuthRoute } from "./lib/auth-context";
+import { AuthGate } from "./components/AuthGate";
+import { SyncProvider } from "./lib/sync-context";
 import { ProfileProvider } from "./lib/profile-context";
 import { NotificationsProvider } from "./lib/notifications-context";
+import { ImportLocalDataSheet } from "./components/ImportLocalDataSheet";
 import { syncNativeSchedulesFromStorage } from "./lib/native-notifications";
+import { handleAuthDeepLink } from "./lib/auth-deeplink";
 import { captureException } from "./lib/posthog";
 import { MotionProvider } from "./lib/motion";
 
@@ -34,6 +39,17 @@ const NotificationsScreen = lazy(() =>
 const NotificationPreferencesScreen = lazy(() =>
   import("./screens/NotificationPreferencesScreen").then((m) => ({
     default: m.NotificationPreferencesScreen,
+  })),
+);
+const LoginScreen = lazy(() =>
+  import("./screens/LoginScreen").then((m) => ({ default: m.LoginScreen })),
+);
+const SignUpScreen = lazy(() =>
+  import("./screens/SignUpScreen").then((m) => ({ default: m.SignUpScreen })),
+);
+const ForgotPasswordScreen = lazy(() =>
+  import("./screens/ForgotPasswordScreen").then((m) => ({
+    default: m.ForgotPasswordScreen,
   })),
 );
 
@@ -67,6 +83,8 @@ function GlobalTaskSheet() {
 
 function AppRoutes() {
   const { tasks } = useTasks();
+  const location = useLocation();
+  const showTabBar = !isAuthRoute(location.pathname);
 
   // Só ressincroniza notificações nativas quando muda algo relevante para o
   // agendamento (status, horário, duração, criação/remoção) — nunca a cada
@@ -88,25 +106,35 @@ function AppRoutes() {
 
   return (
     <>
-      <Suspense fallback={<RouteFallback />}>
-        <IonRouterOutlet animated={false}>
-          <Switch>
-            <Route exact path="/" component={DashboardScreen} />
-            <Route exact path="/agenda" component={AgendaScreen} />
-            <Route exact path="/stats" component={StatsScreen} />
-            <Route exact path="/perfil" component={ProfileScreen} />
-            <Route exact path="/notificacoes" component={NotificationsScreen} />
-            <Route
-              exact
-              path="/notificacoes/preferencias"
-              component={NotificationPreferencesScreen}
-            />
-          </Switch>
-        </IonRouterOutlet>
-      </Suspense>
-      <CustomTabBar />
+      <AuthGate>
+        <Suspense fallback={<RouteFallback />}>
+          <IonRouterOutlet animated={false}>
+            <Switch>
+              <Route exact path="/" component={DashboardScreen} />
+              <Route exact path="/agenda" component={AgendaScreen} />
+              <Route exact path="/stats" component={StatsScreen} />
+              <Route exact path="/perfil" component={ProfileScreen} />
+              <Route exact path="/notificacoes" component={NotificationsScreen} />
+              <Route
+                exact
+                path="/notificacoes/preferencias"
+                component={NotificationPreferencesScreen}
+              />
+              <Route exact path="/login" component={LoginScreen} />
+              <Route exact path="/cadastro" component={SignUpScreen} />
+              <Route
+                exact
+                path="/recuperar-senha"
+                component={ForgotPasswordScreen}
+              />
+            </Switch>
+          </IonRouterOutlet>
+        </Suspense>
+      </AuthGate>
+      {showTabBar ? <CustomTabBar /> : null}
       <GlobalTaskSheet />
       <NativeNotificationBridge />
+      <ImportLocalDataSheet />
     </>
   );
 }
@@ -145,23 +173,32 @@ function App() {
       }
     });
 
+    const urlListener = CapApp.addListener("appUrlOpen", (event) => {
+      void handleAuthDeepLink(event.url);
+    });
+
     return () => {
       void backListener.then((l) => l.remove());
+      void urlListener.then((l) => l.remove());
     };
   }, []);
 
   return (
     <MotionProvider>
       <IonApp>
-        <ProfileProvider>
-          <TasksProvider>
-            <NotificationsProvider>
-              <IonReactRouter>
-                <AppRoutes />
-              </IonReactRouter>
-            </NotificationsProvider>
-          </TasksProvider>
-        </ProfileProvider>
+        <AuthProvider>
+          <SyncProvider>
+            <ProfileProvider>
+              <TasksProvider>
+                <NotificationsProvider>
+                  <IonReactRouter>
+                    <AppRoutes />
+                  </IonReactRouter>
+                </NotificationsProvider>
+              </TasksProvider>
+            </ProfileProvider>
+          </SyncProvider>
+        </AuthProvider>
       </IonApp>
     </MotionProvider>
   );

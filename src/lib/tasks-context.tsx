@@ -17,8 +17,12 @@ import {
   computeStreak,
   loadHistory,
   recordToday,
+  saveHistory,
 } from "./day-stats";
 import { captureEvent } from "./posthog";
+import { taskAnalyticsProps } from "./analytics-task";
+import { useAuth } from "./auth-context";
+import { useSync } from "./sync-context";
 import {
   cancelTaskNotifications,
   requestNotificationPermission,
@@ -117,6 +121,23 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   const [streak, setStreak] = useState(() => computeStreak(loadHistory()));
   const [isNewTaskOpen, setIsNewTaskOpen] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
+  const {
+    registerSyncHandlers,
+    scheduleTasksPush,
+    scheduleHistoryPush,
+    isApplyingRemote,
+  } = useSync();
+
+  useEffect(() => {
+    registerSyncHandlers({
+      applyTasks: (nextTasks) => setTasks(nextTasks),
+      applyHistory: (history) => {
+        saveHistory(history);
+        setStreak(computeStreak(history));
+      },
+    });
+  }, [registerSyncHandlers]);
 
   const taskToEdit = editingTaskId
     ? (tasks.find((t) => t.id === editingTaskId) ?? null)
@@ -124,7 +145,6 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   const activeTask = tasks.find((t) => t.status === "active");
   const focusSeconds = computeFocusSeconds(tasks);
-  const focusMinutes = Math.floor(focusSeconds / 60);
   const completedCount = tasks.filter((t) => t.status === "completed").length;
 
   const completedRecordedRef = useRef<Set<string>>(
@@ -201,8 +221,12 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     const pruned = saveTasks(tasks);
     if (pruned.length !== tasks.length) {
       setTasks(pruned);
+      return;
     }
-  }, [tasks]);
+    if (isAuthenticated && !isApplyingRemote) {
+      scheduleTasksPush(pruned);
+    }
+  }, [tasks, isAuthenticated, isApplyingRemote, scheduleTasksPush]);
 
   // Detecta a conclusão automática da tarefa ativa. O intervalo roda a cada
   // segundo, mas só toca no estado (re-render global) no instante em que a
@@ -243,7 +267,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       focusSeconds,
     });
     setStreak(computeStreak(history));
-  }, [completedCount, focusMinutes]);
+    if (isAuthenticated && !isApplyingRemote) {
+      scheduleHistoryPush(history);
+    }
+  }, [completedCount, focusSeconds, isAuthenticated, isApplyingRemote, scheduleHistoryPush]);
 
   useEffect(() => {
     tasks.forEach((task) => {
@@ -252,15 +279,12 @@ export function TasksProvider({ children }: { children: ReactNode }) {
         !completedRecordedRef.current.has(task.id)
       ) {
         completedRecordedRef.current.add(task.id);
-        captureEvent("task completed", {
-          task_id: task.id,
-          task_title: task.title,
-          task_category: task.category,
-          task_priority: task.priority,
-          task_duration_minutes: Math.floor(task.duration / 60),
-          task_elapsed_minutes: Math.floor(task.elapsed / 60),
-          completion_rate: Math.round((task.elapsed / task.duration) * 100),
-        });
+        captureEvent(
+          "task completed",
+          taskAnalyticsProps(task, {
+            completion_rate: Math.round((task.elapsed / task.duration) * 100),
+          }),
+        );
       }
     });
   }, [tasks]);
@@ -272,25 +296,11 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
     if (editingTaskIdRef.current) {
       setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)));
-      captureEvent("task edited", {
-        task_id: task.id,
-        task_title: task.title,
-        task_category: task.category,
-        task_priority: task.priority,
-        task_duration_minutes: Math.floor(task.duration / 60),
-        has_scheduled_time: Boolean(task.scheduledTime),
-      });
+      captureEvent("task edited", taskAnalyticsProps(task));
       return;
     }
     setTasks((prev) => [...prev, task]);
-    captureEvent("task created", {
-      task_id: task.id,
-      task_title: task.title,
-      task_category: task.category,
-      task_priority: task.priority,
-      task_duration_minutes: Math.floor(task.duration / 60),
-      has_scheduled_time: Boolean(task.scheduledTime),
-    });
+    captureEvent("task created", taskAnalyticsProps(task));
   }, []);
 
   const openNewTask = useCallback(() => {
@@ -314,12 +324,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     void cancelTaskNotifications(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
     if (target) {
-      captureEvent("task deleted", {
-        task_id: target.id,
-        task_title: target.title,
-        task_category: target.category,
-        task_status: target.status,
-      });
+      captureEvent("task deleted", taskAnalyticsProps(target, { task_status: target.status }));
     }
   }, []);
 

@@ -17,8 +17,13 @@ import {
 import { OrbBackground } from "../components/OrbBackground";
 import { Avatar } from "../components/Avatar";
 import { AvatarPickerSheet } from "../components/AvatarPickerSheet";
+import { ConfirmDeleteAccountSheet } from "../components/ConfirmDeleteAccountSheet";
 import { useTasks } from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
+import { useAuth } from "../lib/auth-context";
+import { useSync } from "../lib/sync-context";
+import { captureEvent } from "../lib/posthog";
+import { downloadUserDataExport } from "../lib/user-data-export";
 
 interface SettingsRowProps {
   icon: LucideIcon;
@@ -74,11 +79,58 @@ function SectionLabel({
 export function ProfileScreen() {
   const { streak } = useTasks();
   const { profile } = useProfile();
+  const { isAuthenticated, user, signOut, deleteAccount } = useAuth();
+  const { isSyncing } = useSync();
   const history = useHistory();
   const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeleteSheetOpen, setIsDeleteSheetOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
-  const noop = () => {};
   const openAvatarPicker = () => setIsAvatarPickerOpen(true);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      history.replace("/login");
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExportError(null);
+    setIsExporting(true);
+    try {
+      await downloadUserDataExport(user?.email ?? null);
+      captureEvent("user data exported", { is_authenticated: isAuthenticated });
+    } catch {
+      setExportError("Não foi possível exportar. Tente novamente.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleteError(null);
+    setIsDeletingAccount(true);
+    try {
+      const { error } = await deleteAccount();
+      if (error) {
+        setDeleteError(error);
+        return;
+      }
+      setIsDeleteSheetOpen(false);
+      history.replace("/");
+      window.location.reload();
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
 
   return (
     <IonPage>
@@ -126,11 +178,22 @@ export function ProfileScreen() {
               >
                 {profile.displayName}
               </h1>
-              <p className="text-obsidian-500 text-sm mt-1">
-                Construindo uma rotina melhor,
-                <br />
-                um dia de cada vez.
-              </p>
+              {isAuthenticated && user?.email ? (
+                <p className="text-obsidian-400 text-sm mt-1">
+                  {user.email}
+                  {isSyncing ? (
+                    <span className="block text-xs text-mint-400/80 mt-1">
+                      Sincronizando…
+                    </span>
+                  ) : null}
+                </p>
+              ) : (
+                <p className="text-obsidian-500 text-sm mt-1">
+                  Construindo uma rotina melhor,
+                  <br />
+                  um dia de cada vez.
+                </p>
+              )}
               <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/10">
                 <Flame className="w-3.5 h-3.5 text-coral-400" strokeWidth={2} />
                 <span className="text-xs font-medium text-obsidian-200">
@@ -171,18 +234,28 @@ export function ProfileScreen() {
             >
               <SectionLabel>Conta</SectionLabel>
               <div className="card-glass divide-y divide-white/5 overflow-hidden">
-                <SettingsRow icon={Lock} label="Trocar senha" onClick={noop} />
+                <SettingsRow
+                  icon={Lock}
+                  label="Trocar senha"
+                  onClick={() => history.push("/recuperar-senha")}
+                />
                 <SettingsRow
                   icon={Download}
-                  label="Exportar meus dados"
-                  onClick={noop}
+                  label={isExporting ? "Exportando…" : "Exportar meus dados"}
+                  onClick={() => void handleExport()}
                 />
                 <SettingsRow
                   icon={Trash2}
                   label="Excluir conta"
                   danger
-                  onClick={noop}
+                  onClick={() => {
+                    setDeleteError(null);
+                    setIsDeleteSheetOpen(true);
+                  }}
                 />
+                {exportError ? (
+                  <div className="px-5 py-3 text-sm text-coral-400">{exportError}</div>
+                ) : null}
               </div>
             </motion.section>
 
@@ -193,11 +266,12 @@ export function ProfileScreen() {
             >
               <button
                 type="button"
-                onClick={noop}
-                className="flex w-full items-center justify-center gap-2 px-5 py-4 rounded-3xl border border-white/10 text-obsidian-200 text-sm font-medium hover:bg-white/[0.04] transition-colors touch-manipulation"
+                onClick={() => void handleSignOut()}
+                disabled={isSigningOut}
+                className="flex w-full items-center justify-center gap-2 px-5 py-4 rounded-3xl border border-white/10 text-obsidian-200 text-sm font-medium hover:bg-white/[0.04] transition-colors touch-manipulation disabled:opacity-50"
               >
                 <LogOut className="w-4 h-4" strokeWidth={1.5} />
-                Sair
+                {isSigningOut ? "Saindo…" : "Sair"}
               </button>
             </motion.section>
           </div>
@@ -206,6 +280,15 @@ export function ProfileScreen() {
         <AvatarPickerSheet
           isOpen={isAvatarPickerOpen}
           onClose={() => setIsAvatarPickerOpen(false)}
+        />
+        <ConfirmDeleteAccountSheet
+          isOpen={isDeleteSheetOpen}
+          isDeleting={isDeletingAccount}
+          error={deleteError}
+          onClose={() => {
+            if (!isDeletingAccount) setIsDeleteSheetOpen(false);
+          }}
+          onConfirm={() => void handleDeleteAccount()}
         />
       </IonContent>
     </IonPage>

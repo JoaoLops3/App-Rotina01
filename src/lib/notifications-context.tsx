@@ -41,6 +41,8 @@ import {
 } from "./notification-preferences";
 import { syncNativeSchedules } from "./native-notifications";
 import { DAILY_GOAL_MINUTES, useTasks } from "./tasks-context";
+import { useAuth } from "./auth-context";
+import { useSync } from "./sync-context";
 
 const POLL_INTERVAL_MS = 60_000;
 const STREAK_MILESTONES = [3, 7, 14, 30];
@@ -72,12 +74,26 @@ export function useNotifications(): NotificationsContextValue {
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { tasks, streak } = useTasks();
+  const { isAuthenticated } = useAuth();
+  const {
+    registerSyncHandlers,
+    scheduleNotificationsPush,
+    schedulePreferencesPush,
+    isApplyingRemote,
+  } = useSync();
   const [notifications, setNotifications] = useState<AppNotification[]>(() =>
     loadNotifications(),
   );
   const [preferences, setPreferences] = useState<NotificationPreferences>(() =>
     loadPreferences(),
   );
+
+  useEffect(() => {
+    registerSyncHandlers({
+      applyNotifications: (next) => setNotifications(next),
+      applyPreferences: (next) => setPreferences(next),
+    });
+  }, [registerSyncHandlers]);
 
   const tasksRef = useRef(tasks);
   const streakRef = useRef(streak);
@@ -114,7 +130,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     saveNotifications(notifications);
-  }, [notifications]);
+    if (isAuthenticated && !isApplyingRemote) {
+      scheduleNotificationsPush(notifications);
+    }
+  }, [notifications, isAuthenticated, isApplyingRemote, scheduleNotificationsPush]);
 
   const push = useCallback((entry: NewNotification) => {
     if (!preferencesRef.current.enabled[entry.type]) return;
@@ -246,7 +265,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     setPreferences(prefs);
     savePreferences(prefs);
     void syncNativeSchedules(tasksRef.current, prefs);
-  }, []);
+    if (isAuthenticated && !isApplyingRemote) {
+      schedulePreferencesPush(prefs);
+    }
+  }, [isAuthenticated, isApplyingRemote, schedulePreferencesPush]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

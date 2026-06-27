@@ -30,7 +30,7 @@ export function loadHistory(): DayStat[] {
   }
 }
 
-function saveHistory(history: DayStat[]): void {
+export function saveHistory(history: DayStat[]): void {
   try {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
   } catch {
