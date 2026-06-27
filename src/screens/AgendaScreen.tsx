@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { TaskCard } from "../components/TaskCard";
 import { OrbBackground } from "../components/OrbBackground";

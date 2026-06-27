@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, RefreshCw } from "lucide-react";
 import type { AvatarPickerProps, AvatarStyle } from "../types/avatar";
 import { Avatar } from "./Avatar";
+import { buildAvatarUrl } from "../lib/avatar-url";
 
 const STYLE: AvatarStyle = "toon-head";
 const BATCH_SIZE = 8;
@@ -22,6 +23,17 @@ function createBatch(initialSeed?: string | null): string[] {
   return seeds;
 }
 
+// Aquece o cache HTTP do WebView para o próximo lote (sem persistir nada em
+// localStorage), deixando o "Gerar outras opções" praticamente instantâneo.
+function prefetchBatch(seeds: string[]): void {
+  if (typeof Image === "undefined") return;
+  for (const seed of seeds) {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = buildAvatarUrl(STYLE, seed);
+  }
+}
+
 export function AvatarPicker({
   initialSeed,
   onConfirm,
@@ -32,9 +44,18 @@ export function AvatarPicker({
   const [selectedSeed, setSelectedSeed] = useState<string | null>(
     initialSeed ?? null,
   );
+  const nextBatchRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    const next = createBatch();
+    nextBatchRef.current = next;
+    prefetchBatch(next);
+  }, [seeds]);
 
   const reroll = () => {
-    const next = createBatch();
+    const next =
+      nextBatchRef.current.length > 0 ? nextBatchRef.current : createBatch();
+    nextBatchRef.current = [];
     setSeeds(next);
     setSelectedSeed(null);
   };

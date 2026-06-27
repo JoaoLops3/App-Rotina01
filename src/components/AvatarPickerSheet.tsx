@@ -1,5 +1,5 @@
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "../lib/motion";
 import type { AvatarSelection } from "../types/avatar";
 import { useProfile } from "../lib/profile-context";
 import { useUpdateAvatar } from "../hooks/useUpdateAvatar";

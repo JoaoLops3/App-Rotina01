@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "../lib/motion";
 import { Home, Calendar, BarChart, User, Plus } from "lucide-react";
 import { useHistory, useLocation } from "react-router-dom";
 import { captureEvent } from "../lib/posthog";
@@ -101,16 +101,7 @@ export function CustomTabBar() {
       style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.5rem)" }}
     >
       <div className="mx-4 md:mx-auto md:max-w-xl">
-        <div
-          className="rounded-3xl shadow-lg px-2 py-2"
-          style={{
-            background: "rgba(26, 26, 34, 0.9)",
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255, 255, 255, 0.05)",
-            boxShadow: "0 8px 30px rgba(0, 0, 0, 0.4)",
-          }}
-        >
+        <div className="rounded-3xl shadow-lg px-2 py-2 tab-bar-surface">
           <div className="flex items-center justify-around">
             {leftTabs.map((tab) => (
               <TabButton

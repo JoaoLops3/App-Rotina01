@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { useHistory } from "react-router-dom";
 import { Bell, ChevronLeft, CheckCheck, Settings } from "lucide-react";

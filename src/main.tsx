@@ -1,21 +1,23 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { PostHogProvider } from '@posthog/react';
-import App from './App';
-import { posthog, captureEvent } from './lib/posthog';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { PostHogProvider } from "@posthog/react";
+import App from "./App";
+import { posthog, captureEvent } from "./lib/posthog";
 
 // Custom styles (includes Tailwind + custom design system)
-import './index.css';
+import "./index.css";
 
 // Ionic theme overrides
-import './theme/variables.css';
+import "./theme/variables.css";
 
-captureEvent('app opened');
-
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <PostHogProvider client={posthog}>
       <App />
     </PostHogProvider>
-  </StrictMode>
+  </StrictMode>,
 );
+
+// Disparado após o render para não bloquear o boot; o init do PostHog é
+// agendado de forma diferida e o evento fica na fila até estar pronto.
+captureEvent("app opened");

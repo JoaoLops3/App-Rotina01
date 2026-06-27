@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { StatsWidget } from "../components/StatsWidget";
 import { OrbBackground } from "../components/OrbBackground";

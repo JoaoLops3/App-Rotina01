@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "../lib/motion";
 import { Bell } from "lucide-react";
 import { useHistory } from "react-router-dom";
 import { useNotifications } from "../lib/notifications-context";
