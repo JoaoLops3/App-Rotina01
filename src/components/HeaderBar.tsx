@@ -2,6 +2,7 @@ import { motion } from "../lib/motion";
 import { Bell } from "lucide-react";
 import { useHistory } from "react-router-dom";
 import { useNotifications } from "../lib/notifications-context";
+import { tabNavigationState } from "../lib/tab-navigation";
 import { Avatar } from "./Avatar";
 import type { AvatarStyle } from "../types/avatar";
 
@@ -78,7 +79,9 @@ export function HeaderBar({
       <div className="flex items-center gap-2">
         <motion.button
           type="button"
-          onClick={() => history.push("/notificacoes")}
+          onClick={() =>
+            history.push("/notificacoes", tabNavigationState("home"))
+          }
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           className="relative p-3 rounded-2xl bg-surface-secondary transition-colors hover:bg-surface-tertiary"

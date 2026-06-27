@@ -3,8 +3,10 @@ import { Home, Calendar, BarChart, User, Plus } from "lucide-react";
 import { useHistory, useLocation } from "react-router-dom";
 import { captureEvent } from "../lib/posthog";
 import { useTasks } from "../lib/tasks-context";
-
-type TabId = "home" | "schedule" | "stats" | "profile";
+import {
+  resolveActiveTab,
+  type TabId,
+} from "../lib/tab-navigation";
 
 interface TabItem {
   id: TabId;
@@ -76,8 +78,10 @@ export function CustomTabBar() {
   const location = useLocation();
   const { openNewTask } = useTasks();
 
-  const activeTab =
-    tabs.find((tab) => tab.path === location.pathname)?.id ?? "home";
+  const activeTab = resolveActiveTab(
+    location.pathname,
+    location.state as { activeTab?: TabId } | undefined,
+  );
 
   const handleSelect = (tab: TabItem) => {
     captureEvent("tab changed", {
@@ -140,4 +144,4 @@ export function CustomTabBar() {
   );
 }
 
-export type { TabId };
+export type { TabId } from "../lib/tab-navigation";

@@ -21,6 +21,7 @@ import { useTasks } from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
 import { useAuth } from "../lib/auth-context";
 import { useSync } from "../lib/sync-context";
+import { tabNavigationState } from "../lib/tab-navigation";
 
 interface SettingsRowProps {
   icon: LucideIcon;
@@ -199,12 +200,19 @@ export function ProfileScreen() {
                 <SettingsRow
                   icon={Bell}
                   label="Notificações"
-                  onClick={() => history.push("/notificacoes")}
+                  onClick={() =>
+                    history.push("/notificacoes", tabNavigationState("profile"))
+                  }
                 />
                 <SettingsRow
                   icon={Settings}
                   label="Preferências"
-                  onClick={() => history.push("/notificacoes/preferencias")}
+                  onClick={() =>
+                    history.push(
+                      "/notificacoes/preferencias",
+                      tabNavigationState("profile"),
+                    )
+                  }
                 />
               </div>
             </motion.section>

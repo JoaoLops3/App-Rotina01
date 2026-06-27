@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { Bell, ChevronLeft, CheckCheck, Settings } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
 import { NotificationCard } from "../components/NotificationCard";
@@ -9,6 +9,10 @@ import { useNotifications } from "../lib/notifications-context";
 import { getNotificationNavigationTarget } from "../lib/notification-deeplink";
 import { dayKey } from "../lib/day-stats";
 import { captureEvent } from "../lib/posthog";
+import {
+  tabNavigationState,
+  type TabNavigationState,
+} from "../lib/tab-navigation";
 import type { AppNotification } from "../types/notification";
 
 interface Group {
@@ -42,6 +46,8 @@ function groupByDay(notifications: AppNotification[]): Group[] {
 
 export function NotificationsScreen() {
   const history = useHistory();
+  const location = useLocation();
+  const tabState = location.state as TabNavigationState | undefined;
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
     useNotifications();
 
@@ -94,7 +100,12 @@ export function NotificationsScreen() {
                 <div className="flex items-center gap-2">
                   <motion.button
                     type="button"
-                    onClick={() => history.push("/notificacoes/preferencias")}
+                    onClick={() =>
+                      history.push(
+                        "/notificacoes/preferencias",
+                        tabNavigationState(tabState?.activeTab ?? "home"),
+                      )
+                    }
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.92 }}
                     className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-secondary text-obsidian-200 transition-colors hover:bg-surface-tertiary touch-manipulation"
