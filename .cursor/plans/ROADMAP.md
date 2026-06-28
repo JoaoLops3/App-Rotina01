@@ -59,6 +59,7 @@
 
 - [x] Definir 1 unidade canônica para `duration`/`elapsed` (sugestão: **segundos**).
 - [x] Ajustar exibição ("min restantes", "X min") para converter corretamente.
+- [x] *(Polish pós-Fase 4)* Duração em **horas + minutos** no sheet (`DurationFields`, `task-duration.ts`; até 8h).
 - [x] Revisar o `setInterval` do timer (tick de 1s coerente com a unidade).
 - [x] Conferir `ProgressRing` e `TaskCard` (cálculo de progresso).
 
@@ -150,7 +151,7 @@
 
 ### Visual / identidade
 
-- [ ] **Ícone do push no iOS** — trocar ícone genérico do Capacitor pelo Trilho (asset no Xcode / `AppIcon`) — *adiado → Fase 11*
+- [ ] **Ícone do push no iOS** — notificação ainda usa ícone genérico do Capacitor; `AppIcon` do app já é Trilho (PR pós-rebrand) — *adiado → Fase 11*
 - [ ] **Ícone do push no Android** — `smallIcon` em `res/drawable` + `capacitor.config.ts` (quando pasta `android/` voltar ao repo) — *adiado → Fase 11*
 
 ### Push nativo — tipos que hoje são só in-app
@@ -250,7 +251,7 @@
 
 ## Fase 11 — Login, conta e sync na nuvem (Supabase) 🔄
 
-> **Dividida em 3 etapas** — **11.1 ✅ · 11.2 ✅ · 11.3 quase completa** (falta push remoto e ícones).
+> **Dividida em 3 etapas** — **11.1 ✅ · 11.2 ✅ · 11.3 quase completa** (sync core ok; falta push remoto, ícones de push e pushes nativos de meta/marco).
 
 **Objetivo:** o usuário tem conta, dados na nuvem e continuidade ao trocar de aparelho.
 
@@ -271,7 +272,8 @@
 - [x] Tela de boas-vindas unificada (`/login`) — Entrar | Criar conta, sem scroll, toggle de senha.
 - [x] `AuthProvider` + `AuthGate` — login como 1ª tela quando Supabase configurado.
 - [x] Recuperar senha (`/recuperar-senha`) + deep links Capacitor (`auth-deeplink.ts`).
-- [x] Perfil: email, sair → login, exportar dados, excluir conta (RPC `delete_own_account`).
+- [x] Perfil: email, sair → login, excluir conta (RPC `delete_own_account`). *(Exportar dados removido do Perfil — descoped.)*
+- [x] Nome no cadastro (`display_name` no Supabase) + apelido editável no Perfil (`nickname`, sync na nuvem).
 - [x] PostHog `identify` / `reset`; erros auth em PT-BR.
 - [x] Privacidade PostHog — `taskAnalyticsProps()` sem `task_title`.
 - [x] Redirects de produção — `VITE_APP_URL`, `docs/supabase-auth-production.md`.
@@ -291,6 +293,15 @@
 
 **Arquivos:** `src/lib/supabase.ts`, `src/lib/auth-context.tsx`, `src/lib/sync-context.tsx`, `src/lib/sync/*`, migrations `supabase/`, telas auth, `ImportLocalDataSheet.tsx`  
 **Commit:** `27d30c9` — `feat: Fase 11 — Supabase, auth, sync e preparação pré-loja`
+
+### Polish pós-11.3 (já na `main`)
+
+- [x] Rebrand **Trilho** + logo no login/header (`app-brand.ts`, `AppLogo.tsx`).
+- [x] Ícone do **app** iOS (Assets.xcassets) — distinto do ícone de **push** nativo (ainda pendente).
+- [x] Boot iOS mais rápido até a tela de login (`perf(boot)`).
+- [x] Teclado iOS nos forms auth + polish do sheet de nova tarefa e avatar picker.
+- [x] Tab Perfil permanece ativa ao abrir Notificações pelo atalho do Perfil.
+- [x] Migrations Supabase alinhadas com timestamps do remoto.
 
 ---
 
@@ -351,7 +362,7 @@
 
 ### Como trabalhar
 
-> **Status atual:** Fases 1–10 e **11.1 + 11.2** concluídas na `main`. **11.3** em andamento — falta push remoto e ícones nativos. **Próxima etapa aberta:** fechar 11.3 ou iniciar **Fase 12** (rotinas prontas).
+> **Status atual:** Fases 1–10 e **11.1 + 11.2** concluídas na `main`. **11.3** — sync multi-dispositivo funcional; pendente push remoto (Edge/FCM/APNs), ícones de push e pushes nativos `daily_goal_reached` / `streak_milestone`. Polish pós-11.3 (nome, nickname, duração h+min, rebrand, boot iOS) já mergeado. **Próxima etapa aberta:** fechar lacunas da 11.3 ou iniciar **Fase 12** (rotinas prontas).
 
 1. Pegue **a fase mais ao topo ainda aberta**.
 2. Faça os checkboxes dela.
