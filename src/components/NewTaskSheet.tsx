@@ -141,7 +141,7 @@ export function NewTaskSheet({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-xl text-obsidian-400 hover:text-white hover:bg-white/[0.06] transition-colors touch-manipulation"
+                className="p-2 rounded-xl border border-white/10 bg-white/[0.04] text-obsidian-400 hover:text-white hover:bg-white/[0.08] transition-colors touch-manipulation"
                 aria-label="Fechar"
               >
                 <X className="w-5 h-5" strokeWidth={2} />
