@@ -1,4 +1,6 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 import { Redirect, useLocation } from "react-router-dom";
 import { useAuth, isAuthRoute } from "../lib/auth-context";
 import { AppLogo } from "./AppLogo";
@@ -20,6 +22,15 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading, authConfigured } = useAuth();
   const location = useLocation();
   const pathname = location.pathname;
+  const splashHiddenRef = useRef(false);
+
+  useEffect(() => {
+    if (isLoading || splashHiddenRef.current || !Capacitor.isNativePlatform()) {
+      return;
+    }
+    splashHiddenRef.current = true;
+    void SplashScreen.hide();
+  }, [isLoading]);
 
   if (isLoading) {
     return <AuthLoadingScreen />;
