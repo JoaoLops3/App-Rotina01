@@ -42,9 +42,7 @@ export function ImportLocalDataSheet() {
           >
             <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-white/15" />
 
-            <h2
-              className="font-display text-xl font-semibold text-white"
-            >
+            <h2 className="font-display text-xl font-semibold text-white">
               Sincronizar este aparelho
             </h2>
             <p className="mt-2 text-sm text-obsidian-400 leading-relaxed">

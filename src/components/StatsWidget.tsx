@@ -42,9 +42,7 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
               <p className="text-obsidian-500 text-[10px] font-medium uppercase tracking-wider leading-tight truncate">
                 Foco Hoje
               </p>
-              <p
-                className="font-display font-bold text-2xl text-white leading-tight"
-              >
+              <p className="font-display font-bold text-2xl text-white leading-tight">
                 {stats.focusValue}
               </p>
             </div>
@@ -82,9 +80,7 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
               <p className="text-obsidian-500 text-[10px] font-medium uppercase tracking-wider leading-tight truncate">
                 Tarefas
               </p>
-              <p
-                className="font-display font-bold text-2xl text-white leading-tight"
-              >
+              <p className="font-display font-bold text-2xl text-white leading-tight">
                 {stats.tasksValue}
               </p>
             </div>
@@ -120,9 +116,7 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
             <p className="text-obsidian-500 text-[10px] font-medium uppercase tracking-wider leading-tight truncate">
               Sequência
             </p>
-            <p
-              className="font-display font-bold text-2xl text-white leading-tight"
-            >
+            <p className="font-display font-bold text-2xl text-white leading-tight">
               {stats.streakValue}
             </p>
           </div>

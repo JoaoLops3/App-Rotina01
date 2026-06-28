@@ -51,9 +51,7 @@ export function HeaderBar({
               />
             ) : (
               <div className="w-full h-full rounded-[14px] bg-surface-primary flex items-center justify-center">
-                <span
-                  className="font-display font-bold text-lg text-white"
-                >
+                <span className="font-display font-bold text-lg text-white">
                   {userName.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -66,9 +64,7 @@ export function HeaderBar({
           <p className="m-0 text-xs text-obsidian-500 font-medium tracking-wide uppercase leading-none">
             {greeting}
           </p>
-          <h1
-            className="m-0 font-display font-semibold text-lg text-white tracking-tight leading-tight"
-          >
+          <h1 className="m-0 font-display font-semibold text-lg text-white tracking-tight leading-tight">
             {userName}
           </h1>
         </div>

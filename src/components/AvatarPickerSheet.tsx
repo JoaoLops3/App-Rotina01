@@ -53,9 +53,7 @@ export function AvatarPickerSheet({ isOpen, onClose }: AvatarPickerSheetProps) {
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/15" />
 
             <div className="mb-5">
-              <h2
-                className="font-display text-xl font-semibold text-white"
-              >
+              <h2 className="font-display text-xl font-semibold text-white">
                 Escolher avatar
               </h2>
             </div>

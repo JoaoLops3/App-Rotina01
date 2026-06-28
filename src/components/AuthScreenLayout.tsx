@@ -65,9 +65,7 @@ export function AuthScreenLayout({
               transition={{ duration: 0.35 }}
               className="space-y-2"
             >
-              <h1
-                className="font-display font-semibold text-2xl text-white tracking-tight"
-              >
+              <h1 className="font-display font-semibold text-2xl text-white tracking-tight">
                 {title}
               </h1>
               <p className="text-sm text-obsidian-500">{subtitle}</p>
@@ -109,7 +107,10 @@ export function AuthEmailPasswordForm({
 
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password);
-    setFieldErrors({ email: emailError ?? undefined, password: passwordError ?? undefined });
+    setFieldErrors({
+      email: emailError ?? undefined,
+      password: passwordError ?? undefined,
+    });
     if (emailError || passwordError) return;
 
     setIsSubmitting(true);

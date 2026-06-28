@@ -195,9 +195,7 @@ export const TaskCard = memo(
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-3"
               >
-                <span
-                  className="font-display font-semibold text-mint-400 text-2xl tracking-tight"
-                >
+                <span className="font-display font-semibold text-mint-400 text-2xl tracking-tight">
                   {String(Math.floor(remainingTime / 60)).padStart(2, "0")}:
                   {String(remainingTime % 60).padStart(2, "0")}
                 </span>

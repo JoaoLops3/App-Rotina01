@@ -36,14 +36,12 @@ export function ConfirmDeleteAccountSheet({
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 420, damping: 36 }}
           >
-            <h2
-              className="font-display text-xl font-semibold text-white"
-            >
+            <h2 className="font-display text-xl font-semibold text-white">
               Excluir conta?
             </h2>
             <p className="mt-2 text-sm text-obsidian-400 leading-relaxed">
-              Isso apaga permanentemente sua conta, tarefas, histórico e dados na
-              nuvem. Esta ação não pode ser desfeita.
+              Isso apaga permanentemente sua conta, tarefas, histórico e dados
+              na nuvem. Esta ação não pode ser desfeita.
             </p>
             {error ? (
               <p className="mt-3 text-sm text-coral-400" role="alert">

@@ -3,10 +3,7 @@ import { Home, Calendar, BarChart, User, Plus } from "lucide-react";
 import { useHistory, useLocation } from "react-router-dom";
 import { captureEvent } from "../lib/posthog";
 import { useTasks } from "../lib/tasks-context";
-import {
-  resolveActiveTab,
-  type TabId,
-} from "../lib/tab-navigation";
+import { resolveActiveTab, type TabId } from "../lib/tab-navigation";
 
 interface TabItem {
   id: TabId;

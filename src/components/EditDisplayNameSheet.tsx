@@ -39,8 +39,7 @@ export function EditDisplayNameSheet({
 
   // Ativo se há apelido salvo para limpar, ou se o usuário editou para algo ≠ nome do cadastro
   const canReset =
-    hasCustomNickname ||
-    (isDirty && nickname.trim() !== accountNameDisplay);
+    hasCustomNickname || (isDirty && nickname.trim() !== accountNameDisplay);
 
   useEffect(() => {
     if (isOpen) {
@@ -122,9 +121,7 @@ export function EditDisplayNameSheet({
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/15" />
 
             <div className="mb-5">
-              <h2
-                className="font-display text-xl font-semibold text-white"
-              >
+              <h2 className="font-display text-xl font-semibold text-white">
                 Editar nome
               </h2>
               <p className="mt-1 text-sm text-obsidian-400">

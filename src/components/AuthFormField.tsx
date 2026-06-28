@@ -32,7 +32,10 @@ export function AuthFormField({
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-xs font-medium text-obsidian-400">
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium text-obsidian-400"
+      >
         {label}
       </label>
       <div className="relative">

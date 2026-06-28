@@ -4,10 +4,7 @@ import { AnimatePresence, motion } from "../lib/motion";
 import { Clock, X } from "lucide-react";
 import { DurationFields } from "./DurationFields";
 import { useKeyboardInset } from "../hooks/useKeyboardInset";
-import {
-  parseDurationField,
-  partsToFieldStrings,
-} from "../lib/task-duration";
+import { parseDurationField, partsToFieldStrings } from "../lib/task-duration";
 import type { Task, TaskPriority } from "./TaskCard";
 
 interface NewTaskSheetProps {
@@ -142,9 +139,7 @@ export function NewTaskSheet({
             <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/15" />
 
             <div className="flex items-center justify-between mb-5">
-              <h2
-                className="font-display font-semibold text-xl text-white"
-              >
+              <h2 className="font-display font-semibold text-xl text-white">
                 {isEditing ? "Editar tarefa" : "Nova tarefa"}
               </h2>
               <button

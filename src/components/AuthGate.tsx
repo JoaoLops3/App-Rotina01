@@ -44,10 +44,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return <Redirect to="/login" />;
   }
 
-  if (
-    isAuthenticated &&
-    (pathname === "/login" || pathname === "/cadastro")
-  ) {
+  if (isAuthenticated && (pathname === "/login" || pathname === "/cadastro")) {
     return <Redirect to="/" />;
   }
 
