@@ -207,22 +207,32 @@ export function NewTaskSheet({
                     inputClass={inputClass}
                   />
                 </div>
-                <div className="relative w-[7.25rem] shrink-0">
+                <div className="shrink-0">
                   <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
                     Horário
                   </label>
-                  <div className="relative">
+                  <div className="input-sheet-time-field relative flex h-12 w-[5.5rem] items-center justify-center">
                     <input
                       type="time"
                       value={scheduledTime}
                       onChange={(e) => setScheduledTime(e.target.value)}
-                      className={`${inputClass} input-sheet-time`}
+                      className="input-sheet-time-overlay"
+                      aria-label="Horário"
                     />
-                    <Clock
-                      className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/90"
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
+                    <div className="pointer-events-none flex items-center gap-1.5 text-sm tabular-nums">
+                      <span
+                        className={
+                          scheduledTime ? "text-white" : "text-obsidian-500"
+                        }
+                      >
+                        {scheduledTime || "--:--"}
+                      </span>
+                      <Clock
+                        className="h-4 w-4 text-white/90"
+                        strokeWidth={1.75}
+                        aria-hidden
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

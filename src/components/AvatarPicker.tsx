@@ -7,6 +7,9 @@ import { buildAvatarUrl } from "../lib/avatar-url";
 const STYLE: AvatarStyle = "toon-head";
 const BATCH_SIZE = 8;
 
+const actionButtonClass =
+  "box-border flex flex-1 h-12 min-h-12 items-center justify-center rounded-2xl border px-4 text-sm font-medium touch-manipulation";
+
 function createSeed(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -114,7 +117,7 @@ export function AvatarPicker({
             type="button"
             onClick={onCancel}
             disabled={isSaving}
-            className="flex-1 rounded-2xl border border-white/10 py-3 text-sm font-medium text-obsidian-200 transition-colors hover:bg-white/[0.04] disabled:opacity-40 touch-manipulation"
+            className={`${actionButtonClass} border-white/25 bg-white/[0.04] text-obsidian-200 transition-colors hover:border-white/35 hover:bg-white/[0.08] disabled:opacity-40`}
           >
             Cancelar
           </button>
@@ -123,7 +126,7 @@ export function AvatarPicker({
           type="button"
           onClick={handleConfirm}
           disabled={!selectedSeed || isSaving}
-          className="btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-40 touch-manipulation"
+          className={`${actionButtonClass} btn-primary !px-4 !py-0 border-transparent disabled:cursor-not-allowed disabled:opacity-40`}
         >
           {isSaving ? "Salvando..." : "Confirmar"}
         </button>

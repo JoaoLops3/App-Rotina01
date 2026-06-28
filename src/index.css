@@ -165,14 +165,32 @@
     margin: 0;
   }
 
-  .input-sheet[type="time"] {
-    position: relative;
-    color-scheme: dark;
-    padding-right: 2.5rem;
+  .input-sheet-time-field {
+    @apply rounded-2xl border border-white/10 bg-white/[0.04] transition-colors;
   }
 
-  /* iOS ignora filter no indicador nativo — escondemos e usamos ícone custom */
-  .input-sheet-time::-webkit-calendar-picker-indicator {
+  .input-sheet-time-field:focus-within {
+    @apply border-mint-400/50;
+  }
+
+  /* Input nativo invisível — exibição customizada centralizada no campo */
+  .input-sheet-time-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+    color-scheme: dark;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .input-sheet-time-overlay::-webkit-calendar-picker-indicator {
     position: absolute;
     inset: 0;
     width: 100%;
