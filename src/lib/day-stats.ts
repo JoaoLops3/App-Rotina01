@@ -1,4 +1,4 @@
-import type { Task } from '../components/TaskCard';
+import type { Task } from "../components/TaskCard";
 
 import { STORAGE_KEYS } from "./storage-keys";
 
@@ -15,8 +15,8 @@ export interface DayStat {
 /** Chave de dia (YYYY-MM-DD) em horário local. */
 export function dayKey(date: Date = new Date()): string {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -41,7 +41,10 @@ export function saveHistory(history: DayStat[]): void {
 }
 
 /** Registra (upsert) o snapshot do dia atual e retorna o histórico atualizado. */
-export function recordToday(stat: { tasksCompleted: number; focusSeconds: number }): DayStat[] {
+export function recordToday(stat: {
+  tasksCompleted: number;
+  focusSeconds: number;
+}): DayStat[] {
   const date = dayKey();
   const history = loadHistory();
   const entry: DayStat = { date, ...stat };
@@ -57,9 +60,12 @@ export function recordToday(stat: { tasksCompleted: number; focusSeconds: number
 }
 
 /** Conta dias consecutivos (terminando hoje) com pelo menos uma tarefa concluída. */
-export function computeStreak(history: DayStat[], today: string = dayKey()): number {
+export function computeStreak(
+  history: DayStat[],
+  today: string = dayKey(),
+): number {
   const completedDays = new Set(
-    history.filter((d) => d.tasksCompleted > 0).map((d) => d.date)
+    history.filter((d) => d.tasksCompleted > 0).map((d) => d.date),
   );
   const cursor = new Date(`${today}T00:00:00`);
   // Se hoje ainda não tem conclusão, não quebra a sequência: conta a partir de ontem.
@@ -77,17 +83,26 @@ export function computeStreak(history: DayStat[], today: string = dayKey()): num
 export function sortByScheduledTime(tasks: Task[]): Task[] {
   const toMinutes = (time?: string): number => {
     if (!time) return Number.POSITIVE_INFINITY;
-    const [hours, mins] = time.split(':').map((part) => Number.parseInt(part, 10));
-    if (Number.isNaN(hours) || Number.isNaN(mins)) return Number.POSITIVE_INFINITY;
+    const [hours, mins] = time
+      .split(":")
+      .map((part) => Number.parseInt(part, 10));
+    if (Number.isNaN(hours) || Number.isNaN(mins))
+      return Number.POSITIVE_INFINITY;
     return hours * 60 + mins;
   };
 
-  return [...tasks].sort((a, b) => toMinutes(a.scheduledTime) - toMinutes(b.scheduledTime));
+  return [...tasks].sort(
+    (a, b) => toMinutes(a.scheduledTime) - toMinutes(b.scheduledTime),
+  );
 }
 
 export function computeFocusSeconds(tasks: Task[]): number {
   return tasks.reduce((sum, task) => {
-    if (task.status === 'completed' || task.status === 'active' || task.status === 'paused') {
+    if (
+      task.status === "completed" ||
+      task.status === "active" ||
+      task.status === "paused"
+    ) {
       return sum + task.elapsed;
     }
     return sum;
@@ -101,11 +116,17 @@ export function formatFocusTime(minutes: number): string {
   return `${hours}h ${mins}m`;
 }
 
-export function computeGoalPercent(focusMinutes: number, dailyGoalMinutes: number): number {
+export function computeGoalPercent(
+  focusMinutes: number,
+  dailyGoalMinutes: number,
+): number {
   if (dailyGoalMinutes <= 0) return 0;
   return Math.min(Math.round((focusMinutes / dailyGoalMinutes) * 100), 100);
 }
 
-export function computeGoalProgressPercent(focusMinutes: number, dailyGoalMinutes: number): string {
+export function computeGoalProgressPercent(
+  focusMinutes: number,
+  dailyGoalMinutes: number,
+): string {
   return `${computeGoalPercent(focusMinutes, dailyGoalMinutes)}% meta`;
 }

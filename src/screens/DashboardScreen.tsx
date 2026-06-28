@@ -134,9 +134,7 @@ export function DashboardScreen() {
                       size={100}
                       strokeWidth={6}
                     >
-                      <p
-                        className="m-0 font-display font-bold text-xl text-white leading-none tabular-nums"
-                      >
+                      <p className="m-0 font-display font-bold text-xl text-white leading-none tabular-nums">
                         {String(Math.floor(sessionRemaining / 60)).padStart(
                           2,
                           "0",
@@ -162,9 +160,7 @@ export function DashboardScreen() {
                           Em Andamento
                         </span>
                       </div>
-                      <h2
-                        className="font-display font-semibold text-xl text-white mb-1 truncate"
-                      >
+                      <h2 className="font-display font-semibold text-xl text-white mb-1 truncate">
                         {activeTask.title}
                       </h2>
                       <p className="text-sm text-obsidian-400 mb-3">
@@ -201,9 +197,7 @@ export function DashboardScreen() {
               transition={{ delay: 0.1 }}
             >
               <div className="flex items-center justify-between mb-3 px-1">
-                <h2
-                  className="font-display font-semibold text-lg text-white"
-                >
+                <h2 className="font-display font-semibold text-lg text-white">
                   Próximas
                 </h2>
                 <span className="text-obsidian-500 text-sm">
@@ -218,9 +212,7 @@ export function DashboardScreen() {
                 </div>
               ) : (
                 <div className="card-glass flex flex-col items-center justify-center px-6 py-10 text-center">
-                  <p
-                    className="font-display font-medium text-base text-white"
-                  >
+                  <p className="font-display font-medium text-base text-white">
                     Nenhuma tarefa no momento
                   </p>
                   <p className="text-obsidian-500 text-sm mt-1">

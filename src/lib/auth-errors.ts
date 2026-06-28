@@ -10,7 +10,8 @@ const MESSAGES: Record<string, string> = {
   weak_password: "A senha deve ter pelo menos 6 caracteres.",
   invalid_email: "Informe um e-mail válido.",
   signup_disabled: "Cadastro temporariamente indisponível.",
-  over_request_rate_limit: "Muitas tentativas. Aguarde um momento e tente de novo.",
+  over_request_rate_limit:
+    "Muitas tentativas. Aguarde um momento e tente de novo.",
 };
 
 export function mapAuthError(error: AuthError | null): string | null {

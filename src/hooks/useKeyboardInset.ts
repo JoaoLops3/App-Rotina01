@@ -25,13 +25,9 @@ export function useKeyboardInset(active: boolean): number {
       const onHide = () => setInset(0);
 
       void (async () => {
-        handles.push(
-          await Keyboard.addListener("keyboardWillShow", onShow),
-        );
+        handles.push(await Keyboard.addListener("keyboardWillShow", onShow));
         handles.push(await Keyboard.addListener("keyboardDidShow", onShow));
-        handles.push(
-          await Keyboard.addListener("keyboardWillHide", onHide),
-        );
+        handles.push(await Keyboard.addListener("keyboardWillHide", onHide));
         handles.push(await Keyboard.addListener("keyboardDidHide", onHide));
 
         if (cancelled) {

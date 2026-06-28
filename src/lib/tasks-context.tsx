@@ -270,7 +270,13 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     if (isAuthenticated && !isApplyingRemote) {
       scheduleHistoryPush(history);
     }
-  }, [completedCount, focusSeconds, isAuthenticated, isApplyingRemote, scheduleHistoryPush]);
+  }, [
+    completedCount,
+    focusSeconds,
+    isAuthenticated,
+    isApplyingRemote,
+    scheduleHistoryPush,
+  ]);
 
   useEffect(() => {
     tasks.forEach((task) => {
@@ -324,7 +330,10 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     void cancelTaskNotifications(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
     if (target) {
-      captureEvent("task deleted", taskAnalyticsProps(target, { task_status: target.status }));
+      captureEvent(
+        "task deleted",
+        taskAnalyticsProps(target, { task_status: target.status }),
+      );
     }
   }, []);
 

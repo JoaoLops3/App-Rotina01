@@ -65,9 +65,7 @@ export function validateDurationParts(
 export function parseDurationField(
   hoursStr: string,
   minutesStr: string,
-):
-  | { ok: true; seconds: number }
-  | { ok: false; error: string } {
+): { ok: true; seconds: number } | { ok: false; error: string } {
   const hoursTrim = hoursStr.trim();
   const minutesTrim = minutesStr.trim();
 

@@ -1,15 +1,15 @@
 /* Ionic Core CSS */
-@import '@ionic/react/css/core.css';
-@import '@ionic/react/css/normalize.css';
-@import '@ionic/react/css/structure.css';
-@import '@ionic/react/css/typography.css';
-@import '@ionic/react/css/padding.css';
-@import '@ionic/react/css/float-elements.css';
-@import '@ionic/react/css/text-alignment.css';
-@import '@ionic/react/css/text-transformation.css';
-@import '@ionic/react/css/flex-utils.css';
-@import '@ionic/react/css/display.css';
-@import '@ionic/react/css/palettes/dark.always.css';
+@import "@ionic/react/css/core.css";
+@import "@ionic/react/css/normalize.css";
+@import "@ionic/react/css/structure.css";
+@import "@ionic/react/css/typography.css";
+@import "@ionic/react/css/padding.css";
+@import "@ionic/react/css/float-elements.css";
+@import "@ionic/react/css/text-alignment.css";
+@import "@ionic/react/css/text-transformation.css";
+@import "@ionic/react/css/flex-utils.css";
+@import "@ionic/react/css/display.css";
+@import "@ionic/react/css/palettes/dark.always.css";
 
 /* Ionic Variables and Theming - HEAVILY CUSTOMIZED */
 
@@ -113,7 +113,7 @@
   --ion-item-border-color: rgba(255, 255, 255, 0.05);
 
   /* Font Override */
-  --ion-font-family: 'Inter', system-ui, sans-serif;
+  --ion-font-family: "Inter", system-ui, sans-serif;
 
   /* Safe area */
   --ion-safe-area-top: env(safe-area-inset-top);
@@ -171,7 +171,7 @@ ion-button {
   --border-radius: 1rem;
   --background: linear-gradient(to right, #34d399, #6ee7b7);
   --color: #0d0d12;
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: "Space Grotesk", system-ui, sans-serif;
   font-weight: 500;
   letter-spacing: 0.025em;
   height: 48px;
@@ -198,7 +198,7 @@ ion-toolbar {
 }
 
 ion-title {
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: "Space Grotesk", system-ui, sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
 }
@@ -279,7 +279,7 @@ ion-segment-button {
   --border-radius: 0.5rem;
   --color: #999aa5;
   --color-checked: #34d399;
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: "Space Grotesk", system-ui, sans-serif;
   min-height: 40px;
 }
 
@@ -288,7 +288,7 @@ ion-badge {
   --background: rgba(52, 211, 153, 0.2);
   --color: #34d399;
   border-radius: 0.5rem;
-  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-family: "Space Grotesk", system-ui, sans-serif;
   font-weight: 500;
 }
 

@@ -220,10 +220,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.rpc("delete_own_account");
     if (error) {
       return {
-        error:
-          error.message.includes("Not authenticated")
-            ? "Sessão expirada. Faça login novamente."
-            : "Não foi possível excluir a conta. Tente novamente.",
+        error: error.message.includes("Not authenticated")
+          ? "Sessão expirada. Faça login novamente."
+          : "Não foi possível excluir a conta. Tente novamente.",
       };
     }
 
@@ -240,9 +239,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: "Conta na nuvem não configurada neste ambiente." };
       }
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: getAuthRedirectPath("/login"),
-      });
+      const { error } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        {
+          redirectTo: getAuthRedirectPath("/login"),
+        },
+      );
 
       return { error: mapAuthError(error) };
     },
@@ -262,7 +264,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       deleteAccount,
       resetPassword,
     }),
-    [user, session, isLoading, signIn, signUp, signOut, deleteAccount, resetPassword],
+    [
+      user,
+      session,
+      isLoading,
+      signIn,
+      signUp,
+      signOut,
+      deleteAccount,
+      resetPassword,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

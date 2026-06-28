@@ -109,7 +109,11 @@ function AppRoutes() {
               <Route exact path="/agenda" component={AgendaScreen} />
               <Route exact path="/stats" component={StatsScreen} />
               <Route exact path="/perfil" component={ProfileScreen} />
-              <Route exact path="/notificacoes" component={NotificationsScreen} />
+              <Route
+                exact
+                path="/notificacoes"
+                component={NotificationsScreen}
+              />
               <Route
                 exact
                 path="/notificacoes/preferencias"

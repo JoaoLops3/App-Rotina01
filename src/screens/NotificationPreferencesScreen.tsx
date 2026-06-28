@@ -121,9 +121,7 @@ export function NotificationPreferencesScreen() {
                 <ChevronLeft className="h-5 w-5" strokeWidth={2} />
               </motion.button>
 
-              <h1
-                className="mt-3 mb-0 font-display font-semibold text-2xl text-white tracking-tight"
-              >
+              <h1 className="mt-3 mb-0 font-display font-semibold text-2xl text-white tracking-tight">
                 Preferências de alertas
               </h1>
               <p className="text-obsidian-500 text-sm mt-1">

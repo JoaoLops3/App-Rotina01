@@ -47,7 +47,8 @@ export function ForgotPasswordScreen() {
         onBack={() => history.replace("/login")}
       >
         <div className="card-glass p-5 text-sm text-obsidian-400">
-          Configure as variáveis Supabase no `.env` para usar recuperação de senha.
+          Configure as variáveis Supabase no `.env` para usar recuperação de
+          senha.
         </div>
       </AuthScreenLayout>
     );

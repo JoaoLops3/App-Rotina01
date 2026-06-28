@@ -27,9 +27,7 @@ export function AgendaScreen() {
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="flex items-center justify-between"
             >
-              <h1
-                className="m-0 font-display font-semibold text-2xl text-white tracking-tight"
-              >
+              <h1 className="m-0 font-display font-semibold text-2xl text-white tracking-tight">
                 Agenda
               </h1>
               <span className="text-obsidian-500 text-sm">
@@ -40,9 +38,7 @@ export function AgendaScreen() {
             {activeTasks.length > 0 && (
               <motion.section initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <h2
-                    className="font-display font-semibold text-lg text-white"
-                  >
+                  <h2 className="font-display font-semibold text-lg text-white">
                     Em Andamento
                   </h2>
                   <motion.div
@@ -73,9 +69,7 @@ export function AgendaScreen() {
               transition={{ delay: 0.1 }}
             >
               <div className="flex items-center justify-between mb-3 px-1">
-                <h2
-                  className="font-display font-semibold text-lg text-white"
-                >
+                <h2 className="font-display font-semibold text-lg text-white">
                   Próximas
                 </h2>
                 <span className="text-obsidian-500 text-sm">
@@ -109,9 +103,7 @@ export function AgendaScreen() {
                 transition={{ delay: 0.2 }}
               >
                 <div className="flex items-center justify-between mb-3 px-1">
-                  <h2
-                    className="font-display font-semibold text-lg text-white"
-                  >
+                  <h2 className="font-display font-semibold text-lg text-white">
                     Concluídas
                   </h2>
                   <span className="text-mint-400 text-sm">

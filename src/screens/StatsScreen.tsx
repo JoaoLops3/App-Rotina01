@@ -73,9 +73,7 @@ export function StatsScreen() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              <h1
-                className="m-0 font-display font-semibold text-2xl text-white tracking-tight"
-              >
+              <h1 className="m-0 font-display font-semibold text-2xl text-white tracking-tight">
                 Estatísticas
               </h1>
               <p className="text-obsidian-500 text-sm mt-1">
@@ -111,9 +109,7 @@ export function StatsScreen() {
               transition={{ delay: 0.1 }}
               className="card-glass p-5"
             >
-              <h2
-                className="font-display font-semibold text-lg text-white mb-4"
-              >
+              <h2 className="font-display font-semibold text-lg text-white mb-4">
                 Foco nos últimos 7 dias
               </h2>
               <div className="flex items-end justify-between gap-2 h-36">

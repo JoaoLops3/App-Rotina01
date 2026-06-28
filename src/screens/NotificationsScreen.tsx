@@ -129,9 +129,7 @@ export function NotificationsScreen() {
                 </div>
               </div>
 
-              <h1
-                className="mt-3 mb-0 font-display font-semibold text-2xl text-white tracking-tight"
-              >
+              <h1 className="mt-3 mb-0 font-display font-semibold text-2xl text-white tracking-tight">
                 Notificações
               </h1>
               <p className="text-obsidian-500 text-sm mt-1">

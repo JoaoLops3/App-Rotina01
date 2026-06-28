@@ -25,7 +25,9 @@ export function migrateLegacyStorageKeys(): void {
   if (typeof localStorage === "undefined") return;
   if (localStorage.getItem(MIGRATION_FLAG) === "1") return;
 
-  for (const key of Object.keys(STORAGE_KEYS) as (keyof typeof STORAGE_KEYS)[]) {
+  for (const key of Object.keys(
+    STORAGE_KEYS,
+  ) as (keyof typeof STORAGE_KEYS)[]) {
     const legacyKey = LEGACY_STORAGE_KEYS[key];
     const newKey = STORAGE_KEYS[key];
     const legacyValue = localStorage.getItem(legacyKey);

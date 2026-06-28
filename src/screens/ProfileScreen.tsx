@@ -157,17 +157,13 @@ export function ProfileScreen() {
                       alt="Avatar do perfil"
                     />
                   ) : (
-                    <span
-                      className="font-display font-bold text-3xl text-white"
-                    >
+                    <span className="font-display font-bold text-3xl text-white">
                       {shownName.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
               </motion.button>
-              <h1
-                className="mt-4 mb-0 inline-flex max-w-[min(calc(16rem+2.5rem),calc(100vw-4rem))] items-center gap-1.5 font-display font-semibold text-2xl leading-none text-white tracking-tight"
-              >
+              <h1 className="mt-4 mb-0 inline-flex max-w-[min(calc(16rem+2.5rem),calc(100vw-4rem))] items-center gap-1.5 font-display font-semibold text-2xl leading-none text-white tracking-tight">
                 <span
                   className="inline-flex shrink-0 items-center justify-center p-0.5 invisible pointer-events-none"
                   aria-hidden="true"
@@ -177,7 +173,9 @@ export function ProfileScreen() {
                 <span
                   className="min-w-0 flex-1 truncate text-center"
                   title={
-                    isProfileHeaderNameTruncated(shownName) ? shownName : undefined
+                    isProfileHeaderNameTruncated(shownName)
+                      ? shownName
+                      : undefined
                   }
                 >
                   {headerName}

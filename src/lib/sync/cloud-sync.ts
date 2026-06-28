@@ -91,8 +91,8 @@ export async function pullUserSnapshot(
       supabase
         .from("profiles")
         .select(
-      "id, display_name, nickname, avatar_seed, avatar_style, local_import_done",
-    )
+          "id, display_name, nickname, avatar_seed, avatar_style, local_import_done",
+        )
         .eq("id", userId)
         .maybeSingle(),
       supabase.from("tasks").select("*").eq("user_id", userId),
@@ -190,8 +190,9 @@ export async function syncTasksToCloud(
     .eq("user_id", userId);
 
   const staleIds =
-    existing?.filter((row) => !ids.has(row.id as string)).map((row) => row.id as string) ??
-    [];
+    existing
+      ?.filter((row) => !ids.has(row.id as string))
+      .map((row) => row.id as string) ?? [];
 
   if (staleIds.length > 0) {
     await supabase.from("tasks").delete().in("id", staleIds);
@@ -220,9 +221,7 @@ export async function syncProfileToCloud(
 
   await supabase
     .from("profiles")
-    .update(
-      profileToEditableRow(profile, meta?.local_import_done ?? false),
-    )
+    .update(profileToEditableRow(profile, meta?.local_import_done ?? false))
     .eq("id", userId);
 }
 
@@ -262,8 +261,9 @@ export async function syncNotificationsToCloud(
     .eq("user_id", userId);
 
   const staleIds =
-    existing?.filter((row) => !ids.has(row.id as string)).map((row) => row.id as string) ??
-    [];
+    existing
+      ?.filter((row) => !ids.has(row.id as string))
+      .map((row) => row.id as string) ?? [];
 
   if (staleIds.length > 0) {
     await supabase.from("notifications").delete().in("id", staleIds);

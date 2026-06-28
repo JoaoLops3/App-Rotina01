@@ -111,7 +111,8 @@ export function LoginScreen() {
       displayName: displayNameError ?? undefined,
       email: emailError ?? undefined,
       password: passwordError ?? undefined,
-      confirmPassword: mode === "signup" ? passwordError ?? undefined : undefined,
+      confirmPassword:
+        mode === "signup" ? (passwordError ?? undefined) : undefined,
     });
 
     if (emailError || displayNameError || passwordError) return;
@@ -203,9 +204,7 @@ export function LoginScreen() {
               >
                 <AppLogo size={64} />
               </motion.div>
-              <h1
-                className="font-display font-bold text-3xl text-white tracking-tight"
-              >
+              <h1 className="font-display font-bold text-3xl text-white tracking-tight">
                 {APP_NAME}
               </h1>
               <p className="mt-2 text-sm text-obsidian-400 max-w-[260px] leading-relaxed">

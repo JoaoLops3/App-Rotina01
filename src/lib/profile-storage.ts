@@ -17,7 +17,11 @@ const DEFAULT_PROFILE: UserProfile = {
 };
 
 export function getShownName(profile: UserProfile): string {
-  return profile.nickname?.trim() || profile.accountName.trim() || DEFAULT_ACCOUNT_NAME;
+  return (
+    profile.nickname?.trim() ||
+    profile.accountName.trim() ||
+    DEFAULT_ACCOUNT_NAME
+  );
 }
 
 export function truncateForProfileHeader(

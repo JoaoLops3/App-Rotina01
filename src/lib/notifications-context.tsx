@@ -133,7 +133,12 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     if (isAuthenticated && !isApplyingRemote) {
       scheduleNotificationsPush(notifications);
     }
-  }, [notifications, isAuthenticated, isApplyingRemote, scheduleNotificationsPush]);
+  }, [
+    notifications,
+    isAuthenticated,
+    isApplyingRemote,
+    scheduleNotificationsPush,
+  ]);
 
   const push = useCallback((entry: NewNotification) => {
     if (!preferencesRef.current.enabled[entry.type]) return;
@@ -261,14 +266,17 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     setNotifications((prev) => markAllReadStore(prev));
   }, []);
 
-  const updatePreferences = useCallback((prefs: NotificationPreferences) => {
-    setPreferences(prefs);
-    savePreferences(prefs);
-    void syncNativeSchedules(tasksRef.current, prefs);
-    if (isAuthenticated && !isApplyingRemote) {
-      schedulePreferencesPush(prefs);
-    }
-  }, [isAuthenticated, isApplyingRemote, schedulePreferencesPush]);
+  const updatePreferences = useCallback(
+    (prefs: NotificationPreferences) => {
+      setPreferences(prefs);
+      savePreferences(prefs);
+      void syncNativeSchedules(tasksRef.current, prefs);
+      if (isAuthenticated && !isApplyingRemote) {
+        schedulePreferencesPush(prefs);
+      }
+    },
+    [isAuthenticated, isApplyingRemote, schedulePreferencesPush],
+  );
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

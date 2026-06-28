@@ -292,7 +292,5 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     ],
   );
 
-  return (
-    <SyncContext.Provider value={value}>{children}</SyncContext.Provider>
-  );
+  return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;
 }
