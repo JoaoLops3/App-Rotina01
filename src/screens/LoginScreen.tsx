@@ -6,6 +6,7 @@ import { OrbBackground } from "../components/OrbBackground";
 import { AppLogo } from "../components/AppLogo";
 import { AuthFormField } from "../components/AuthFormField";
 import { useAuth } from "../lib/auth-context";
+import { useKeyboardInset } from "../hooks/useKeyboardInset";
 import { APP_NAME, APP_TAGLINE } from "../lib/app-brand";
 import {
   validateDisplayName,
@@ -160,16 +161,35 @@ export function LoginScreen() {
         ? "Criando conta…"
         : "Criar conta";
 
+  const keyboardInset = useKeyboardInset(true);
+  const keyboardOpen = keyboardInset > 0;
+
   return (
     <IonPage>
       <IonContent
-        scrollY={false}
+        scrollY={keyboardOpen}
         forceOverscroll={false}
-        className="ion-content-custom ion-content-auth"
+        className={`ion-content-custom ion-content-auth${
+          keyboardOpen ? " ion-content-auth-scrollable" : ""
+        }`}
       >
         <OrbBackground />
 
-        <div className="relative z-10 flex h-full flex-col justify-center overflow-hidden px-5 pt-safe pb-safe md:mx-auto md:max-w-md">
+        <div
+          className={`relative z-10 flex min-h-full flex-col px-5 pt-safe md:mx-auto md:max-w-md ${
+            keyboardOpen
+              ? "justify-start"
+              : "h-full justify-center overflow-hidden pb-safe"
+          }`}
+          style={
+            keyboardOpen
+              ? {
+                  paddingBottom: `calc(${keyboardInset}px + env(safe-area-inset-bottom, 0px))`,
+                  transition: "padding-bottom 0.25s ease-out",
+                }
+              : undefined
+          }
+        >
           <div className="flex flex-col">
             <motion.header
               initial={{ opacity: 0, y: -16 }}

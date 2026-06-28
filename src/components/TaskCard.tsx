@@ -43,9 +43,14 @@ const categoryColors: Record<string, string> = {
   Focus: "bg-electric-500/20 text-electric-400",
   Criativo: "bg-coral-500/20 text-coral-400",
   Saúde: "bg-mint-500/20 text-mint-400",
+  Entretenimento: "bg-obsidian-400/20 text-obsidian-300",
   Comunicação: "bg-obsidian-400/20 text-obsidian-300",
   Default: "bg-obsidian-500/20 text-obsidian-300",
 };
+
+function getCategoryLabel(category: string): string {
+  return category === "Comunicação" ? "Entretenimento" : category;
+}
 
 export const TaskCard = memo(
   function TaskCard({
@@ -167,7 +172,7 @@ export const TaskCard = memo(
               <span
                 className={`tiny px-2 py-0.5 rounded-lg text-xs font-medium ${categoryColors[task.category] || categoryColors["Default"]}`}
               >
-                {task.category}
+                {getCategoryLabel(task.category)}
               </span>
               {task.scheduledTime && (
                 <span className="text-xs text-obsidian-500 flex items-center gap-1">

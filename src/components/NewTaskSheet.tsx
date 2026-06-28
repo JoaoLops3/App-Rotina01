@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "../lib/motion";
-import { X } from "lucide-react";
+import { Clock, Timer, X } from "lucide-react";
+import { useKeyboardInset } from "../hooks/useKeyboardInset";
 import type { Task, TaskPriority } from "./TaskCard";
 
 interface NewTaskSheetProps {
@@ -10,7 +12,7 @@ interface NewTaskSheetProps {
   taskToEdit?: Task | null;
 }
 
-const categories = ["Focus", "Criativo", "Saúde", "Comunicação"] as const;
+const categories = ["Focus", "Criativo", "Saúde", "Entretenimento"] as const;
 
 const priorities: { id: TaskPriority; label: string }[] = [
   { id: "low", label: "Baixa" },
@@ -25,8 +27,7 @@ function createId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-const inputClass =
-  "w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 text-white placeholder:text-obsidian-500 outline-none focus:border-mint-400/50 transition-colors";
+const inputClass = "input-sheet";
 
 export function NewTaskSheet({
   isOpen,
@@ -35,6 +36,8 @@ export function NewTaskSheet({
   taskToEdit,
 }: NewTaskSheetProps) {
   const isEditing = Boolean(taskToEdit);
+  const keyboardInset = useKeyboardInset(isOpen);
+  const titleInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>(categories[0]);
   const [durationMinutes, setDurationMinutes] = useState("30");
@@ -56,6 +59,11 @@ export function NewTaskSheet({
         setScheduledTime("");
         setPriority("medium");
       }
+
+      const focusTimer = window.setTimeout(() => {
+        titleInputRef.current?.focus();
+      }, 320);
+      return () => window.clearTimeout(focusTimer);
     }
   }, [isOpen, taskToEdit]);
 
@@ -91,11 +99,15 @@ export function NewTaskSheet({
     onClose();
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
           className="fixed inset-0 z-[100] flex items-end justify-center"
+          style={{
+            paddingBottom: Math.max(0, keyboardInset - 8),
+            transition: "padding-bottom 0.25s ease-out",
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -109,7 +121,7 @@ export function NewTaskSheet({
           />
 
           <motion.div
-            className="relative w-full max-w-lg card-glass rounded-b-none p-5 pb-8"
+            className="relative w-full max-w-lg card-glass rounded-t-3xl rounded-b-none p-5 pb-8 max-h-[min(85dvh,100%)] overflow-y-auto"
             style={{
               paddingBottom: "calc(2rem + env(safe-area-inset-bottom))",
             }}
@@ -143,7 +155,7 @@ export function NewTaskSheet({
                   Título
                 </label>
                 <input
-                  autoFocus
+                  ref={titleInputRef}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onKeyDown={(e) => {
@@ -181,25 +193,39 @@ export function NewTaskSheet({
                   <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
                     Duração (min)
                   </label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    value={durationMinutes}
-                    onChange={(e) => setDurationMinutes(e.target.value)}
-                    className={inputClass}
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      value={durationMinutes}
+                      onChange={(e) => setDurationMinutes(e.target.value)}
+                      className={`${inputClass} pr-10`}
+                    />
+                    <Timer
+                      className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/90"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
+                <div className="relative flex-1">
                   <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
                     Horário
                   </label>
-                  <input
-                    type="time"
-                    value={scheduledTime}
-                    onChange={(e) => setScheduledTime(e.target.value)}
-                    className={inputClass}
-                  />
+                  <div className="relative">
+                    <input
+                      type="time"
+                      value={scheduledTime}
+                      onChange={(e) => setScheduledTime(e.target.value)}
+                      className={`${inputClass} input-sheet-time`}
+                    />
+                    <Clock
+                      className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/90"
+                      strokeWidth={1.75}
+                      aria-hidden
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -237,6 +263,7 @@ export function NewTaskSheet({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

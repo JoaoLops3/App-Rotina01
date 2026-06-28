@@ -16,24 +16,32 @@ export function useKeyboardInset(active: boolean): number {
     }
 
     if (Capacitor.isNativePlatform()) {
-      let showHandle: { remove: () => Promise<void> } | undefined;
-      let hideHandle: { remove: () => Promise<void> } | undefined;
+      const handles: { remove: () => Promise<void> }[] = [];
+      let cancelled = false;
 
-      void Keyboard.addListener("keyboardWillShow", (event) => {
+      const onShow = (event: { keyboardHeight: number }) => {
         setInset(event.keyboardHeight);
-      }).then((handle) => {
-        showHandle = handle;
-      });
+      };
+      const onHide = () => setInset(0);
 
-      void Keyboard.addListener("keyboardWillHide", () => {
-        setInset(0);
-      }).then((handle) => {
-        hideHandle = handle;
-      });
+      void (async () => {
+        handles.push(
+          await Keyboard.addListener("keyboardWillShow", onShow),
+        );
+        handles.push(await Keyboard.addListener("keyboardDidShow", onShow));
+        handles.push(
+          await Keyboard.addListener("keyboardWillHide", onHide),
+        );
+        handles.push(await Keyboard.addListener("keyboardDidHide", onHide));
+
+        if (cancelled) {
+          await Promise.all(handles.map((handle) => handle.remove()));
+        }
+      })();
 
       return () => {
-        void showHandle?.remove();
-        void hideHandle?.remove();
+        cancelled = true;
+        void Promise.all(handles.map((handle) => handle.remove()));
       };
     }
 
