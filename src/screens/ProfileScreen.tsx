@@ -167,11 +167,17 @@ export function ProfileScreen() {
                 </div>
               </motion.button>
               <h1
-                className="mt-4 mb-0 inline-flex items-center gap-1.5 font-display font-semibold text-2xl leading-none text-white tracking-tight"
+                className="mt-4 mb-0 inline-flex max-w-[min(calc(16rem+2.5rem),calc(100vw-4rem))] items-center gap-1.5 font-display font-semibold text-2xl leading-none text-white tracking-tight"
                 style={{ fontFamily: "Space Grotesk" }}
               >
                 <span
-                  className="max-w-[min(16rem,calc(100vw-5rem))] truncate"
+                  className="inline-flex shrink-0 items-center justify-center p-0.5 invisible pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <Pencil className="w-4 h-4" strokeWidth={1.75} />
+                </span>
+                <span
+                  className="min-w-0 flex-1 truncate text-center"
                   title={
                     isProfileHeaderNameTruncated(shownName) ? shownName : undefined
                   }
@@ -182,7 +188,7 @@ export function ProfileScreen() {
                   type="button"
                   onClick={() => setIsEditNameOpen(true)}
                   aria-label="Editar nome"
-                  className="inline-flex items-center justify-center p-0.5 text-obsidian-500 hover:text-obsidian-300 transition-colors touch-manipulation"
+                  className="inline-flex shrink-0 items-center justify-center p-0.5 text-obsidian-500 hover:text-obsidian-300 transition-colors touch-manipulation"
                 >
                   <Pencil className="w-4 h-4" strokeWidth={1.75} />
                 </button>

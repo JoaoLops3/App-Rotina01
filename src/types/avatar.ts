@@ -35,6 +35,7 @@ export interface UseUpdateAvatarResult {
 
 export interface UseUpdateNicknameResult {
   updateNickname: (nickname: string) => Promise<void>;
+  resetNickname: () => Promise<void>;
   isSaving: boolean;
   error: string | null;
 }

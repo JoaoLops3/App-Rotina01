@@ -39,5 +39,23 @@ export function useUpdateNickname(): UseUpdateNicknameResult {
     [profile, setProfile, isAuthenticated],
   );
 
-  return { updateNickname, isSaving, error };
+  const resetNickname = useCallback(async () => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      setProfile({ ...profile, nickname: null });
+      captureEvent("nickname reset", {
+        synced_to_cloud: isAuthenticated,
+      });
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Não foi possível resetar.",
+      );
+      throw err;
+    } finally {
+      setIsSaving(false);
+    }
+  }, [profile, setProfile, isAuthenticated]);
+
+  return { updateNickname, resetNickname, isSaving, error };
 }
