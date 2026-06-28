@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { captureEvent } from "../lib/posthog";
 import { taskAnalyticsProps } from "../lib/analytics-task";
+import { formatDuration } from "../lib/task-duration";
 import { useActiveElapsed } from "../lib/tasks-context";
 
 export type TaskStatus = "active" | "pending" | "paused" | "completed";
@@ -207,7 +208,7 @@ export const TaskCard = memo(
             {!isActive && (
               <div className="flex items-center gap-2">
                 <span className="text-obsidian-400 text-sm">
-                  {Math.floor(task.duration / 60)} min
+                  {formatDuration(task.duration)}
                 </span>
                 {task.status === "completed" && (
                   <motion.span

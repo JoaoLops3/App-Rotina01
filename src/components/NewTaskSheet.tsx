@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "../lib/motion";
-import { Clock, Timer, X } from "lucide-react";
+import { Clock, X } from "lucide-react";
+import { DurationFields } from "./DurationFields";
 import { useKeyboardInset } from "../hooks/useKeyboardInset";
+import {
+  parseDurationField,
+  partsToFieldStrings,
+} from "../lib/task-duration";
 import type { Task, TaskPriority } from "./TaskCard";
 
 interface NewTaskSheetProps {
@@ -40,6 +45,7 @@ export function NewTaskSheet({
   const titleInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>(categories[0]);
+  const [durationHours, setDurationHours] = useState("0");
   const [durationMinutes, setDurationMinutes] = useState("30");
   const [scheduledTime, setScheduledTime] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
@@ -49,12 +55,15 @@ export function NewTaskSheet({
       if (taskToEdit) {
         setTitle(taskToEdit.title);
         setCategory(taskToEdit.category);
-        setDurationMinutes(String(Math.round(taskToEdit.duration / 60)));
+        const parts = partsToFieldStrings(taskToEdit.duration);
+        setDurationHours(parts.hours);
+        setDurationMinutes(parts.minutes);
         setScheduledTime(taskToEdit.scheduledTime ?? "");
         setPriority(taskToEdit.priority);
       } else {
         setTitle("");
         setCategory(categories[0]);
+        setDurationHours("0");
         setDurationMinutes("30");
         setScheduledTime("");
         setPriority("medium");
@@ -68,13 +77,13 @@ export function NewTaskSheet({
   }, [isOpen, taskToEdit]);
 
   const trimmedTitle = title.trim();
-  const minutes = Number(durationMinutes);
-  const isValid =
-    trimmedTitle.length > 0 && Number.isFinite(minutes) && minutes > 0;
+  const durationResult = parseDurationField(durationHours, durationMinutes);
+  const durationError = durationResult.ok ? null : durationResult.error;
+  const isValid = trimmedTitle.length > 0 && durationResult.ok;
 
   const handleSubmit = () => {
-    if (!isValid) return;
-    const duration = Math.round(minutes * 60);
+    if (!isValid || !durationResult.ok) return;
+    const duration = durationResult.seconds;
     const task: Task = taskToEdit
       ? {
           ...taskToEdit,
@@ -187,28 +196,18 @@ export function NewTaskSheet({
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
-                    Duração (min)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      value={durationMinutes}
-                      onChange={(e) => setDurationMinutes(e.target.value)}
-                      className={`${inputClass} pr-10`}
-                    />
-                    <Timer
-                      className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/90"
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
-                  </div>
+              <div className="flex gap-3 items-start">
+                <div className="min-w-0 flex-1">
+                  <DurationFields
+                    hours={durationHours}
+                    minutes={durationMinutes}
+                    onHoursChange={setDurationHours}
+                    onMinutesChange={setDurationMinutes}
+                    error={durationError}
+                    inputClass={inputClass}
+                  />
                 </div>
-                <div className="relative flex-1">
+                <div className="relative w-[7.25rem] shrink-0">
                   <label className="block text-xs text-obsidian-400 uppercase tracking-wide mb-2">
                     Horário
                   </label>
