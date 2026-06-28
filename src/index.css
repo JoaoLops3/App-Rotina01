@@ -150,6 +150,41 @@
     transform: scale(0.98);
   }
 
+  /* Inputs de formulário — altura fixa; time/number alinhados no iOS */
+  .input-sheet {
+    @apply box-border h-12 min-h-12 max-h-12 w-full px-4 rounded-2xl bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-obsidian-500 outline-none focus:border-mint-400/50 transition-colors;
+  }
+
+  .input-sheet[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  .input-sheet[type="number"]::-webkit-inner-spin-button,
+  .input-sheet[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .input-sheet[type="time"] {
+    position: relative;
+    color-scheme: dark;
+    padding-right: 2.5rem;
+  }
+
+  /* iOS ignora filter no indicador nativo — escondemos e usamos ícone custom */
+  .input-sheet-time::-webkit-calendar-picker-indicator {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
   .text-gradient {
     background: linear-gradient(to right, #6ee7b7, white, #a78bfa);
     -webkit-background-clip: text;
@@ -164,6 +199,15 @@
   .ion-content-auth::part(scroll) {
     overflow: hidden;
     overscroll-behavior: none;
+  }
+
+  .ion-content-auth-scrollable {
+    --overflow: auto;
+  }
+
+  .ion-content-auth-scrollable::part(scroll) {
+    overflow: auto;
+    overscroll-behavior: contain;
   }
 }
 

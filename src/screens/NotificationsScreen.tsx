@@ -131,7 +131,6 @@ export function NotificationsScreen() {
 
               <h1
                 className="mt-3 mb-0 font-display font-semibold text-2xl text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 Notificações
               </h1>

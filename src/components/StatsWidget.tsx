@@ -44,7 +44,6 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
               </p>
               <p
                 className="font-display font-bold text-2xl text-white leading-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 {stats.focusValue}
               </p>
@@ -85,7 +84,6 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
               </p>
               <p
                 className="font-display font-bold text-2xl text-white leading-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 {stats.tasksValue}
               </p>
@@ -124,7 +122,6 @@ export function StatsWidget({ stats, onViewStats }: StatsWidgetProps) {
             </p>
             <p
               className="font-display font-bold text-2xl text-white leading-tight"
-              style={{ fontFamily: "Space Grotesk" }}
             >
               {stats.streakValue}
             </p>

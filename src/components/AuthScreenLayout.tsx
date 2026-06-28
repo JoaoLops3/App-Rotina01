@@ -5,6 +5,7 @@ import { useHistory } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
 import { AuthFormField } from "../components/AuthFormField";
+import { useKeyboardInset } from "../hooks/useKeyboardInset";
 import { validateEmail, validatePassword } from "../lib/auth-errors";
 
 interface AuthScreenLayoutProps {
@@ -23,13 +24,29 @@ export function AuthScreenLayout({
   showBack = true,
 }: AuthScreenLayoutProps) {
   const history = useHistory();
+  const keyboardInset = useKeyboardInset(true);
+  const keyboardOpen = keyboardInset > 0;
 
   return (
     <IonPage>
-      <IonContent scrollY={true} className="ion-content-custom">
+      <IonContent
+        scrollY
+        forceOverscroll={false}
+        className="ion-content-custom ion-content-auth ion-content-auth-scrollable"
+      >
         <OrbBackground />
 
-        <div className="relative z-10 min-h-screen pb-12 md:mx-auto md:max-w-xl">
+        <div
+          className="relative z-10 min-h-full pb-12 md:mx-auto md:max-w-xl"
+          style={
+            keyboardOpen
+              ? {
+                  paddingBottom: `calc(${keyboardInset}px + 3rem + env(safe-area-inset-bottom, 0px))`,
+                  transition: "padding-bottom 0.25s ease-out",
+                }
+              : undefined
+          }
+        >
           <div className="px-4 pt-safe pb-2 space-y-6">
             {showBack ? (
               <button
@@ -50,7 +67,6 @@ export function AuthScreenLayout({
             >
               <h1
                 className="font-display font-semibold text-2xl text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 {title}
               </h1>

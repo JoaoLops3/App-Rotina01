@@ -55,7 +55,6 @@ export function AvatarPickerSheet({ isOpen, onClose }: AvatarPickerSheetProps) {
             <div className="mb-5">
               <h2
                 className="font-display text-xl font-semibold text-white"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 Escolher avatar
               </h2>

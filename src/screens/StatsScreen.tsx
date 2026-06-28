@@ -75,7 +75,6 @@ export function StatsScreen() {
             >
               <h1
                 className="m-0 font-display font-semibold text-2xl text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 Estatísticas
               </h1>
@@ -114,7 +113,6 @@ export function StatsScreen() {
             >
               <h2
                 className="font-display font-semibold text-lg text-white mb-4"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 Foco nos últimos 7 dias
               </h2>

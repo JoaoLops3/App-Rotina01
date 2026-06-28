@@ -1,12 +1,15 @@
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
 import { StatusBar, Style } from "@capacitor/status-bar";
-import { SplashScreen } from "@capacitor/splash-screen";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 import { Route, Switch, useLocation } from "react-router-dom";
 import { Suspense, lazy, useEffect, useMemo } from "react";
-import { DashboardScreen } from "./screens/DashboardScreen";
+const DashboardScreen = lazy(() =>
+  import("./screens/DashboardScreen").then((m) => ({
+    default: m.DashboardScreen,
+  })),
+);
 import { CustomTabBar } from "./components/CustomTabBar";
 import { NewTaskSheet } from "./components/NewTaskSheet";
 import { NativeNotificationBridge } from "./components/NativeNotificationBridge";
@@ -41,17 +44,9 @@ const NotificationPreferencesScreen = lazy(() =>
     default: m.NotificationPreferencesScreen,
   })),
 );
-const LoginScreen = lazy(() =>
-  import("./screens/LoginScreen").then((m) => ({ default: m.LoginScreen })),
-);
-const SignUpScreen = lazy(() =>
-  import("./screens/SignUpScreen").then((m) => ({ default: m.SignUpScreen })),
-);
-const ForgotPasswordScreen = lazy(() =>
-  import("./screens/ForgotPasswordScreen").then((m) => ({
-    default: m.ForgotPasswordScreen,
-  })),
-);
+import { LoginScreen } from "./screens/LoginScreen";
+import { SignUpScreen } from "./screens/SignUpScreen";
+import { ForgotPasswordScreen } from "./screens/ForgotPasswordScreen";
 
 setupIonicReact({
   mode: "ios",
@@ -151,7 +146,6 @@ function App() {
       try {
         await StatusBar.setOverlaysWebView({ overlay: true });
         await StatusBar.setStyle({ style: Style.Dark });
-        await SplashScreen.hide();
       } catch (err) {
         if (
           err instanceof Error &&

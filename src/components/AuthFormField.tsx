@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type RefObject } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
 interface AuthFormFieldProps {
@@ -11,6 +11,7 @@ interface AuthFormFieldProps {
   placeholder?: string;
   error?: string | null;
   maxLength?: number;
+  inputRef?: RefObject<HTMLInputElement>;
 }
 
 export function AuthFormField({
@@ -23,6 +24,7 @@ export function AuthFormField({
   placeholder,
   error,
   maxLength,
+  inputRef,
 }: AuthFormFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -35,6 +37,7 @@ export function AuthFormField({
       </label>
       <div className="relative">
         <input
+          ref={inputRef}
           id={id}
           type={inputType}
           value={value}

@@ -38,7 +38,6 @@ export function ConfirmDeleteAccountSheet({
           >
             <h2
               className="font-display text-xl font-semibold text-white"
-              style={{ fontFamily: "Space Grotesk" }}
             >
               Excluir conta?
             </h2>
