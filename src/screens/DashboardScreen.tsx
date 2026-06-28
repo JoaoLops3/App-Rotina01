@@ -14,6 +14,7 @@ import {
   useTasks,
 } from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
+import { getShownName } from "../lib/profile-storage";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -104,7 +105,7 @@ export function DashboardScreen() {
         <div className="relative z-10 min-h-screen pb-32 md:mx-auto md:max-w-xl">
           <HeaderBar
             greeting={getGreeting()}
-            userName={profile.displayName}
+            userName={getShownName(profile)}
             avatarSeed={profile.avatarSeed}
             avatarStyle={profile.avatarStyle}
           />

@@ -1,5 +1,7 @@
 import type { AuthError } from "@supabase/supabase-js";
 
+import { PROFILE_HEADER_NAME_MAX_LENGTH } from "./profile-storage";
+
 const MESSAGES: Record<string, string> = {
   invalid_credentials: "E-mail ou senha incorretos.",
   email_not_confirmed:
@@ -61,5 +63,23 @@ export function validatePasswordConfirmation(
   const passwordError = validatePassword(password);
   if (passwordError) return passwordError;
   if (password !== confirmation) return "As senhas não coincidem.";
+  return null;
+}
+
+export function validateDisplayName(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) return "Informe seu nome.";
+  if (trimmed.length < 2) return "O nome deve ter pelo menos 2 caracteres.";
+  if (trimmed.length > 50) return "O nome deve ter no máximo 50 caracteres.";
+  return null;
+}
+
+export function validateNickname(name: string): string | null {
+  const trimmed = name.trim();
+  if (!trimmed) return "Informe seu nome.";
+  if (trimmed.length < 2) return "O nome deve ter pelo menos 2 caracteres.";
+  if (trimmed.length > PROFILE_HEADER_NAME_MAX_LENGTH) {
+    return `O nome deve ter no máximo ${PROFILE_HEADER_NAME_MAX_LENGTH} caracteres.`;
+  }
   return null;
 }

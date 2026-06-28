@@ -58,6 +58,18 @@ export function rowToTask(row: TaskRow): Task {
   };
 }
 
+export function profileToEditableRow(
+  profile: UserProfile,
+  localImportDone: boolean,
+): Database["public"]["Tables"]["profiles"]["Update"] {
+  return {
+    nickname: profile.nickname,
+    avatar_seed: profile.avatarSeed,
+    avatar_style: profile.avatarStyle,
+    local_import_done: localImportDone,
+  };
+}
+
 export function profileToRow(
   profile: UserProfile,
   userId: string,
@@ -65,7 +77,8 @@ export function profileToRow(
 ): Database["public"]["Tables"]["profiles"]["Insert"] {
   return {
     id: userId,
-    display_name: profile.displayName,
+    display_name: profile.accountName,
+    nickname: profile.nickname,
     avatar_seed: profile.avatarSeed,
     avatar_style: profile.avatarStyle,
     local_import_done: localImportDone,
@@ -74,7 +87,8 @@ export function profileToRow(
 
 export function rowToProfile(row: ProfileRow): UserProfile {
   return {
-    displayName: row.display_name,
+    accountName: row.display_name,
+    nickname: row.nickname,
     avatarSeed: row.avatar_seed,
     avatarStyle: "toon-head",
   };
@@ -144,14 +158,20 @@ export function hasMeaningfulLocalData(): boolean {
   if (snapshot.history.length > 0) return true;
   if (snapshot.notifications.length > 0) return true;
   if (snapshot.profile.avatarSeed) return true;
-  if (snapshot.profile.displayName !== "Alex") return true;
+  if (snapshot.profile.nickname) return true;
+  if (snapshot.profile.accountName !== "Alex") return true;
   return false;
 }
 
 export const EMPTY_SNAPSHOT: UserDataSnapshot = {
   tasks: [],
   history: [],
-  profile: { displayName: "Alex", avatarSeed: null, avatarStyle: "toon-head" },
+  profile: {
+    accountName: "Alex",
+    nickname: null,
+    avatarSeed: null,
+    avatarStyle: "toon-head",
+  },
   preferences: readLocalSnapshot().preferences,
   notifications: [],
   localImportDone: true,

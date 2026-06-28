@@ -8,6 +8,7 @@ import { AuthFormField } from "../components/AuthFormField";
 import { useAuth } from "../lib/auth-context";
 import { APP_NAME, APP_TAGLINE } from "../lib/app-brand";
 import {
+  validateDisplayName,
   validateEmail,
   validatePassword,
   validatePasswordConfirmation,
@@ -67,9 +68,11 @@ export function LoginScreen() {
     queryMode === "cadastro" ? "signup" : "login",
   );
   const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{
+    displayName?: string;
     email?: string;
     password?: string;
     confirmPassword?: string;
@@ -87,6 +90,7 @@ export function LoginScreen() {
     setFormError(null);
     setSuccessMessage(null);
     setFieldErrors({});
+    setDisplayName("");
     history.replace(next === "signup" ? "/login?mode=cadastro" : "/login");
   };
 
@@ -96,18 +100,21 @@ export function LoginScreen() {
     setSuccessMessage(null);
 
     const emailError = validateEmail(email);
+    const displayNameError =
+      mode === "signup" ? validateDisplayName(displayName) : null;
     const passwordError =
       mode === "signup"
         ? validatePasswordConfirmation(password, confirmPassword)
         : validatePassword(password);
 
     setFieldErrors({
+      displayName: displayNameError ?? undefined,
       email: emailError ?? undefined,
       password: passwordError ?? undefined,
       confirmPassword: mode === "signup" ? passwordError ?? undefined : undefined,
     });
 
-    if (emailError || passwordError) return;
+    if (emailError || displayNameError || passwordError) return;
 
     setIsSubmitting(true);
     try {
@@ -121,7 +128,11 @@ export function LoginScreen() {
         return;
       }
 
-      const { error, needsEmailConfirmation } = await signUp(email, password);
+      const { error, needsEmailConfirmation } = await signUp(
+        email,
+        password,
+        displayName,
+      );
       if (error) {
         setFormError(error);
         return;
@@ -215,6 +226,29 @@ export function LoginScreen() {
                   onSubmit={(e) => void handleSubmit(e)}
                   className="card-glass mt-4 space-y-4 p-5"
                 >
+                  <AnimatePresence mode="wait">
+                    {mode === "signup" ? (
+                      <motion.div
+                        key="name"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <AuthFormField
+                          id="welcome-name"
+                          label="Nome"
+                          type="text"
+                          value={displayName}
+                          onChange={setDisplayName}
+                          autoComplete="name"
+                          placeholder="Como quer ser chamado?"
+                          error={fieldErrors.displayName}
+                        />
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+
                   <AuthFormField
                     id="welcome-email"
                     label="E-mail"

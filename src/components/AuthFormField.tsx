@@ -10,6 +10,7 @@ interface AuthFormFieldProps {
   autoComplete?: string;
   placeholder?: string;
   error?: string | null;
+  maxLength?: number;
 }
 
 export function AuthFormField({
@@ -21,6 +22,7 @@ export function AuthFormField({
   autoComplete,
   placeholder,
   error,
+  maxLength,
 }: AuthFormFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
@@ -39,6 +41,7 @@ export function AuthFormField({
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
           placeholder={placeholder}
+          maxLength={maxLength}
           className={`w-full rounded-2xl border bg-white/[0.04] py-3.5 text-sm text-white placeholder:text-obsidian-600 outline-none transition-colors focus:border-mint-500/50 focus:ring-1 focus:ring-mint-500/30 ${
             isPassword ? "pl-4 pr-12" : "px-4"
           } ${error ? "border-coral-500/60" : "border-white/10"}`}

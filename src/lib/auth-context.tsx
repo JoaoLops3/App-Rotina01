@@ -10,6 +10,7 @@ import {
 import type { Session, User } from "@supabase/supabase-js";
 import { mapAuthError } from "./auth-errors";
 import { getAuthRedirectPath } from "./app-url";
+import { loadProfile, saveProfile } from "./profile-storage";
 import { clearAllLocalAppData } from "./user-data-export";
 import { captureEvent, identifyUser, resetAnalyticsUser } from "./posthog";
 import { getSupabase, isSupabaseConfigured } from "./supabase";
@@ -26,7 +27,11 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   authConfigured: boolean;
   signIn: (email: string, password: string) => Promise<AuthResult>;
-  signUp: (email: string, password: string) => Promise<AuthResult>;
+  signUp: (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => Promise<AuthResult>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<AuthResult>;
   resetPassword: (email: string) => Promise<AuthResult>;
@@ -42,19 +47,48 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-async function ensureProfileRow(userId: string): Promise<void> {
+function getDisplayNameFromUser(user: User): string | null {
+  const raw = user.user_metadata?.display_name;
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+async function ensureProfileRow(user: User): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) return;
 
+  const metaName = getDisplayNameFromUser(user);
+
   const { data: existing } = await supabase
     .from("profiles")
-    .select("id")
-    .eq("id", userId)
+    .select("id, display_name")
+    .eq("id", user.id)
     .maybeSingle();
 
-  if (existing) return;
+  if (!existing) {
+    await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        ...(metaName ? { display_name: metaName } : {}),
+      },
+      { onConflict: "id" },
+    );
+    if (metaName) {
+      const local = loadProfile();
+      saveProfile({ ...local, accountName: metaName });
+    }
+    return;
+  }
 
-  await supabase.from("profiles").upsert({ id: userId }, { onConflict: "id" });
+  if (metaName && existing.display_name === "Alex") {
+    await supabase
+      .from("profiles")
+      .update({ display_name: metaName })
+      .eq("id", user.id);
+    const local = loadProfile();
+    saveProfile({ ...local, accountName: metaName });
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -76,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setUser(data.session?.user ?? null);
       if (data.session?.user) {
-        void ensureProfileRow(data.session.user.id);
+        void ensureProfileRow(data.session.user);
         identifyUser(data.session.user.id);
       }
       setIsLoading(false);
@@ -89,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(nextSession?.user ?? null);
 
       if (event === "SIGNED_IN" && nextSession?.user) {
-        void ensureProfileRow(nextSession.user.id);
+        void ensureProfileRow(nextSession.user);
         identifyUser(nextSession.user.id);
         captureEvent("auth signed in");
       }
@@ -124,7 +158,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signUp = useCallback(
-    async (email: string, password: string): Promise<AuthResult> => {
+    async (
+      email: string,
+      password: string,
+      displayName: string,
+    ): Promise<AuthResult> => {
       const supabase = getSupabase();
       if (!supabase) {
         return {
@@ -133,11 +171,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
       }
 
+      const trimmedName = displayName.trim();
+
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
           emailRedirectTo: getAuthRedirectPath("/login"),
+          data: { display_name: trimmedName },
         },
       });
 
@@ -147,6 +188,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const needsEmailConfirmation = !data.session && Boolean(data.user);
       if (data.session?.user) {
+        await ensureProfileRow(data.session.user);
+        const local = loadProfile();
+        saveProfile({
+          ...local,
+          accountName: trimmedName,
+          nickname: local.nickname,
+        });
         captureEvent("auth signed up");
       } else if (needsEmailConfirmation) {
         captureEvent("auth signed up", { pending_email_confirmation: true });
