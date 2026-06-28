@@ -11,7 +11,7 @@ import type { AppNotification } from "../../types/notification";
 import {
   dayStatToRow,
   notificationToRow,
-  profileToRow,
+  profileToEditableRow,
   rowToDayStat,
   rowToNotification,
   rowToProfile,
@@ -55,7 +55,9 @@ export async function fetchProfileMeta(
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, display_name, avatar_seed, avatar_style, local_import_done")
+    .select(
+      "id, display_name, nickname, avatar_seed, avatar_style, local_import_done",
+    )
     .eq("id", userId)
     .maybeSingle();
 
@@ -88,7 +90,9 @@ export async function pullUserSnapshot(
     await Promise.all([
       supabase
         .from("profiles")
-        .select("id, display_name, avatar_seed, avatar_style, local_import_done")
+        .select(
+      "id, display_name, nickname, avatar_seed, avatar_style, local_import_done",
+    )
         .eq("id", userId)
         .maybeSingle(),
       supabase.from("tasks").select("*").eq("user_id", userId),
@@ -113,7 +117,12 @@ export async function pullUserSnapshot(
     history: (historyRes.data ?? []).map((row) => rowToDayStat(row)),
     profile: profileRow
       ? rowToProfile(profileRow)
-      : { displayName: "Alex", avatarSeed: null, avatarStyle: "toon-head" },
+      : {
+          accountName: "Alex",
+          nickname: null,
+          avatarSeed: null,
+          avatarStyle: "toon-head",
+        },
     preferences: mergePreferences(
       prefsRes.data?.prefs as Partial<NotificationPreferences> | undefined,
     ),
@@ -149,14 +158,15 @@ export async function pushUserSnapshot(
   await syncNotificationsToCloud(userId, snapshot.notifications);
   await syncPreferencesToCloud(userId, snapshot.preferences);
 
-  await supabase.from("profiles").upsert(
-    profileToRow(
-      snapshot.profile,
-      userId,
-      markImportDone || snapshot.localImportDone,
-    ),
-    { onConflict: "id" },
-  );
+  await supabase
+    .from("profiles")
+    .update(
+      profileToEditableRow(
+        snapshot.profile,
+        markImportDone || snapshot.localImportDone,
+      ),
+    )
+    .eq("id", userId);
 }
 
 export async function syncTasksToCloud(
@@ -208,10 +218,12 @@ export async function syncProfileToCloud(
 
   const meta = await fetchProfileMeta(userId);
 
-  await supabase.from("profiles").upsert(
-    profileToRow(profile, userId, meta?.local_import_done ?? false),
-    { onConflict: "id" },
-  );
+  await supabase
+    .from("profiles")
+    .update(
+      profileToEditableRow(profile, meta?.local_import_done ?? false),
+    )
+    .eq("id", userId);
 }
 
 export async function syncPreferencesToCloud(

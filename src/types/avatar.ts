@@ -1,7 +1,8 @@
 export type AvatarStyle = "toon-head";
 
 export interface UserProfile {
-  displayName: string;
+  accountName: string;
+  nickname: string | null;
   avatarSeed: string | null;
   avatarStyle: AvatarStyle;
 }
@@ -28,6 +29,12 @@ export interface AvatarPickerProps {
 
 export interface UseUpdateAvatarResult {
   updateAvatar: (seed: string, style?: AvatarStyle) => Promise<void>;
+  isSaving: boolean;
+  error: string | null;
+}
+
+export interface UseUpdateNicknameResult {
+  updateNickname: (nickname: string) => Promise<void>;
   isSaving: boolean;
   error: string | null;
 }

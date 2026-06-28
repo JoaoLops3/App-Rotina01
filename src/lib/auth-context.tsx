@@ -75,7 +75,8 @@ async function ensureProfileRow(user: User): Promise<void> {
       { onConflict: "id" },
     );
     if (metaName) {
-      saveProfile({ ...loadProfile(), displayName: metaName });
+      const local = loadProfile();
+      saveProfile({ ...local, accountName: metaName });
     }
     return;
   }
@@ -85,7 +86,8 @@ async function ensureProfileRow(user: User): Promise<void> {
       .from("profiles")
       .update({ display_name: metaName })
       .eq("id", user.id);
-    saveProfile({ ...loadProfile(), displayName: metaName });
+    const local = loadProfile();
+    saveProfile({ ...local, accountName: metaName });
   }
 }
 
@@ -187,7 +189,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const needsEmailConfirmation = !data.session && Boolean(data.user);
       if (data.session?.user) {
         await ensureProfileRow(data.session.user);
-        saveProfile({ ...loadProfile(), displayName: trimmedName });
+        const local = loadProfile();
+        saveProfile({
+          ...local,
+          accountName: trimmedName,
+          nickname: local.nickname,
+        });
         captureEvent("auth signed up");
       } else if (needsEmailConfirmation) {
         captureEvent("auth signed up", { pending_email_confirmation: true });

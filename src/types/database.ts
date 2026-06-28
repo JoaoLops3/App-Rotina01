@@ -24,6 +24,7 @@ export interface Database {
         Row: {
           id: string;
           display_name: string;
+          nickname: string | null;
           avatar_seed: string | null;
           avatar_style: string;
           local_import_done: boolean;
@@ -33,6 +34,7 @@ export interface Database {
         Insert: {
           id: string;
           display_name?: string;
+          nickname?: string | null;
           avatar_seed?: string | null;
           avatar_style?: string;
           local_import_done?: boolean;
@@ -42,6 +44,7 @@ export interface Database {
         Update: {
           id?: string;
           display_name?: string;
+          nickname?: string | null;
           avatar_seed?: string | null;
           avatar_style?: string;
           local_import_done?: boolean;

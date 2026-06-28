@@ -12,13 +12,20 @@ import {
   ChevronRight,
   ImageIcon,
   type LucideIcon,
+  Pencil,
 } from "lucide-react";
 import { OrbBackground } from "../components/OrbBackground";
 import { Avatar } from "../components/Avatar";
 import { AvatarPickerSheet } from "../components/AvatarPickerSheet";
+import { EditDisplayNameSheet } from "../components/EditDisplayNameSheet";
 import { ConfirmDeleteAccountSheet } from "../components/ConfirmDeleteAccountSheet";
 import { useTasks } from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
+import {
+  getShownName,
+  isProfileHeaderNameTruncated,
+  truncateForProfileHeader,
+} from "../lib/profile-storage";
 import { useAuth } from "../lib/auth-context";
 import { useSync } from "../lib/sync-context";
 import { tabNavigationState } from "../lib/tab-navigation";
@@ -81,6 +88,7 @@ export function ProfileScreen() {
   const { isSyncing } = useSync();
   const history = useHistory();
   const [isAvatarPickerOpen, setIsAvatarPickerOpen] = useState(false);
+  const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isDeleteSheetOpen, setIsDeleteSheetOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -115,6 +123,9 @@ export function ProfileScreen() {
     }
   };
 
+  const shownName = getShownName(profile);
+  const headerName = truncateForProfileHeader(shownName);
+
   return (
     <IonPage>
       <IonContent scrollY={true} className="ion-content-custom">
@@ -134,7 +145,7 @@ export function ProfileScreen() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 aria-label="Alterar avatar"
-                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5 touch-manipulation"
+                className="mt-4 w-20 h-20 rounded-3xl bg-gradient-to-br from-mint-400 to-electric-500 p-0.5 touch-manipulation"
                 style={{ boxShadow: "0 0 30px rgba(52, 211, 153, 0.25)" }}
               >
                 <div className="w-full h-full rounded-[22px] bg-surface-primary flex items-center justify-center overflow-hidden">
@@ -150,16 +161,31 @@ export function ProfileScreen() {
                       className="font-display font-bold text-3xl text-white"
                       style={{ fontFamily: "Space Grotesk" }}
                     >
-                      {profile.displayName.charAt(0).toUpperCase()}
+                      {shownName.charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
               </motion.button>
               <h1
-                className="mt-4 mb-0 font-display font-semibold text-2xl text-white tracking-tight"
+                className="mt-4 mb-0 inline-flex items-center gap-1.5 font-display font-semibold text-2xl leading-none text-white tracking-tight"
                 style={{ fontFamily: "Space Grotesk" }}
               >
-                {profile.displayName}
+                <span
+                  className="max-w-[min(16rem,calc(100vw-5rem))] truncate"
+                  title={
+                    isProfileHeaderNameTruncated(shownName) ? shownName : undefined
+                  }
+                >
+                  {headerName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsEditNameOpen(true)}
+                  aria-label="Editar nome"
+                  className="inline-flex items-center justify-center p-0.5 text-obsidian-500 hover:text-obsidian-300 transition-colors touch-manipulation"
+                >
+                  <Pencil className="w-4 h-4" strokeWidth={1.75} />
+                </button>
               </h1>
               {isAuthenticated && user?.email ? (
                 <p className="text-obsidian-400 text-sm mt-1">
@@ -263,6 +289,10 @@ export function ProfileScreen() {
         <AvatarPickerSheet
           isOpen={isAvatarPickerOpen}
           onClose={() => setIsAvatarPickerOpen(false)}
+        />
+        <EditDisplayNameSheet
+          isOpen={isEditNameOpen}
+          onClose={() => setIsEditNameOpen(false)}
         />
         <ConfirmDeleteAccountSheet
           isOpen={isDeleteSheetOpen}
