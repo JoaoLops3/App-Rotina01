@@ -136,7 +136,6 @@ export function DashboardScreen() {
                     >
                       <p
                         className="m-0 font-display font-bold text-xl text-white leading-none tabular-nums"
-                        style={{ fontFamily: "Space Grotesk" }}
                       >
                         {String(Math.floor(sessionRemaining / 60)).padStart(
                           2,
@@ -165,7 +164,6 @@ export function DashboardScreen() {
                       </div>
                       <h2
                         className="font-display font-semibold text-xl text-white mb-1 truncate"
-                        style={{ fontFamily: "Space Grotesk" }}
                       >
                         {activeTask.title}
                       </h2>
@@ -205,7 +203,6 @@ export function DashboardScreen() {
               <div className="flex items-center justify-between mb-3 px-1">
                 <h2
                   className="font-display font-semibold text-lg text-white"
-                  style={{ fontFamily: "Space Grotesk" }}
                 >
                   Próximas
                 </h2>
@@ -223,7 +220,6 @@ export function DashboardScreen() {
                 <div className="card-glass flex flex-col items-center justify-center px-6 py-10 text-center">
                   <p
                     className="font-display font-medium text-base text-white"
-                    style={{ fontFamily: "Space Grotesk" }}
                   >
                     Nenhuma tarefa no momento
                   </p>

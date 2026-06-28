@@ -184,7 +184,6 @@ export const TaskCard = memo(
 
             <h3
               className={`font-display font-medium text-lg leading-tight tracking-tight mb-1 ${isActive ? "text-white" : "text-obsidian-200"}`}
-              style={{ fontFamily: "Space Grotesk" }}
             >
               {task.title}
             </h3>
@@ -197,7 +196,6 @@ export const TaskCard = memo(
               >
                 <span
                   className="font-display font-semibold text-mint-400 text-2xl tracking-tight"
-                  style={{ fontFamily: "Space Grotesk" }}
                 >
                   {String(Math.floor(remainingTime / 60)).padStart(2, "0")}:
                   {String(remainingTime % 60).padStart(2, "0")}

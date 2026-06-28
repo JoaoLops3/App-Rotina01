@@ -46,10 +46,9 @@ function AuthModeTabs({
             onClick={() => onChange(id)}
             className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all touch-manipulation ${
               isActive
-                ? "bg-white/10 text-white shadow-sm"
+                ? "bg-white/10 text-white shadow-sm font-display"
                 : "text-obsidian-400 hover:text-obsidian-200"
             }`}
-            style={isActive ? { fontFamily: "Space Grotesk" } : undefined}
           >
             {label}
           </button>
@@ -206,7 +205,6 @@ export function LoginScreen() {
               </motion.div>
               <h1
                 className="font-display font-bold text-3xl text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 {APP_NAME}
               </h1>

@@ -53,7 +53,6 @@ export function HeaderBar({
               <div className="w-full h-full rounded-[14px] bg-surface-primary flex items-center justify-center">
                 <span
                   className="font-display font-bold text-lg text-white"
-                  style={{ fontFamily: "Space Grotesk" }}
                 >
                   {userName.charAt(0).toUpperCase()}
                 </span>
@@ -69,7 +68,6 @@ export function HeaderBar({
           </p>
           <h1
             className="m-0 font-display font-semibold text-lg text-white tracking-tight leading-tight"
-            style={{ fontFamily: "Space Grotesk" }}
           >
             {userName}
           </h1>

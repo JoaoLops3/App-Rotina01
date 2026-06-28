@@ -29,7 +29,6 @@ export function AgendaScreen() {
             >
               <h1
                 className="m-0 font-display font-semibold text-2xl text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 Agenda
               </h1>
@@ -43,7 +42,6 @@ export function AgendaScreen() {
                 <div className="flex items-center justify-between mb-3 px-1">
                   <h2
                     className="font-display font-semibold text-lg text-white"
-                    style={{ fontFamily: "Space Grotesk" }}
                   >
                     Em Andamento
                   </h2>
@@ -77,7 +75,6 @@ export function AgendaScreen() {
               <div className="flex items-center justify-between mb-3 px-1">
                 <h2
                   className="font-display font-semibold text-lg text-white"
-                  style={{ fontFamily: "Space Grotesk" }}
                 >
                   Próximas
                 </h2>
@@ -114,7 +111,6 @@ export function AgendaScreen() {
                 <div className="flex items-center justify-between mb-3 px-1">
                   <h2
                     className="font-display font-semibold text-lg text-white"
-                    style={{ fontFamily: "Space Grotesk" }}
                   >
                     Concluídas
                   </h2>

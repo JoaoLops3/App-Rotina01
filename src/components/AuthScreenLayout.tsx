@@ -67,7 +67,6 @@ export function AuthScreenLayout({
             >
               <h1
                 className="font-display font-semibold text-2xl text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 {title}
               </h1>

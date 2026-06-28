@@ -124,7 +124,6 @@ export function EditDisplayNameSheet({
             <div className="mb-5">
               <h2
                 className="font-display text-xl font-semibold text-white"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 Editar nome
               </h2>

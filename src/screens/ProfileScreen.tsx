@@ -159,7 +159,6 @@ export function ProfileScreen() {
                   ) : (
                     <span
                       className="font-display font-bold text-3xl text-white"
-                      style={{ fontFamily: "Space Grotesk" }}
                     >
                       {shownName.charAt(0).toUpperCase()}
                     </span>
@@ -168,7 +167,6 @@ export function ProfileScreen() {
               </motion.button>
               <h1
                 className="mt-4 mb-0 inline-flex max-w-[min(calc(16rem+2.5rem),calc(100vw-4rem))] items-center gap-1.5 font-display font-semibold text-2xl leading-none text-white tracking-tight"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 <span
                   className="inline-flex shrink-0 items-center justify-center p-0.5 invisible pointer-events-none"

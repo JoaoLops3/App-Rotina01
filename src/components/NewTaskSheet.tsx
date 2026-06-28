@@ -135,7 +135,6 @@ export function NewTaskSheet({
             <div className="flex items-center justify-between mb-5">
               <h2
                 className="font-display font-semibold text-xl text-white"
-                style={{ fontFamily: "Space Grotesk" }}
               >
                 {isEditing ? "Editar tarefa" : "Nova tarefa"}
               </h2>
