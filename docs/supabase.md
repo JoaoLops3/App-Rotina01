@@ -68,10 +68,14 @@ Detalhes de conflito/offline: [`docs/sync-behavior.md`](./sync-behavior.md)
 
 | Arquivo | Conteúdo |
 |---------|----------|
-| `20250627000000_initial_schema.sql` | Enums, tabelas, índices, RLS, grants |
-| `20250627000001_harden_function_security.sql` | `search_path`, revoke EXECUTE em funções sensíveis |
+| `20260627173457_initial_schema.sql` | Enums, tabelas, índices, RLS, grants |
+| `20260627173903_harden_function_security.sql` | `search_path` em `set_updated_at`, revoke EXECUTE em `handle_new_user` |
+| `20260627173929_revoke_rls_auto_enable_rpc.sql` | Revoke EXECUTE em `rls_auto_enable` |
+| `20260627183639_delete_own_account.sql` | Função `delete_own_account` (LGPD) |
+| `20260627203026_signup_display_name.sql` | `handle_new_user` com `display_name` do signup |
+| `20260628022742_profile_nickname.sql` | Coluna `nickname` separada de `display_name` |
 
-Remoto também tem `revoke_rls_auto_enable_rpc` (equivalente ao revoke de `rls_auto_enable` na migration 001).
+Os version IDs devem coincidir com `supabase_migrations.schema_migrations` no remoto — necessário para o check **Supabase Preview** no GitHub.
 
 ---
 
