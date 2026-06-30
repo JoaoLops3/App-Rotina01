@@ -2,11 +2,14 @@ import { useEffect } from "react";
 import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
 import { StatsWidget } from "../components/StatsWidget";
+import { TrainStreakCard } from "../components/TrainStreakCard";
 import { OrbBackground } from "../components/OrbBackground";
 import { captureEvent } from "../lib/posthog";
 import {
   computeFocusSeconds,
   computeGoalPercent,
+  computeRecordStreak,
+  computeWeekDots,
   dayKey,
   formatFocusTime,
   loadHistory,
@@ -50,6 +53,9 @@ export function StatsScreen() {
   const week = lastSevenDays(loadHistory());
   const maxFocus = Math.max(...week.map((d) => d.focusSeconds), 1);
   const todayKey = dayKey();
+  const history = loadHistory();
+  const recordDays = computeRecordStreak(history);
+  const weekDots = computeWeekDots(history, tasks);
 
   useEffect(() => {
     captureEvent("stats viewed", {
@@ -94,14 +100,21 @@ export function StatsScreen() {
                   tasksValue: `${completedTasks.length} / ${tasks.length}`,
                   tasksRemainingLabel: `${remainingTasks} ${remainingTasks === 1 ? "restante" : "restantes"} hoje`,
                   tasksProgress: tasksPercent,
-                  streakValue: `${streak} ${streak === 1 ? "dia" : "dias"}`,
-                  streakLabel:
-                    streak > 0
-                      ? "Dias seguidos com pelo menos uma tarefa concluída."
-                      : "Conclua uma tarefa hoje para iniciar sua sequência.",
                 }}
               />
             </motion.section>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+            >
+              <TrainStreakCard
+                streakDays={streak}
+                recordDays={recordDays}
+                weekDots={weekDots}
+              />
+            </motion.div>
 
             <motion.section
               initial={{ opacity: 0, y: 20 }}

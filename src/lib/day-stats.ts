@@ -12,6 +12,17 @@ export interface DayStat {
   focusSeconds: number;
 }
 
+export type DayDotStatus =
+  | "full"
+  | "partial"
+  | "empty"
+  | "today-full"
+  | "today-partial";
+
+export interface DayDot {
+  status: DayDotStatus;
+}
+
 /** Chave de dia (YYYY-MM-DD) em horário local. */
 export function dayKey(date: Date = new Date()): string {
   const year = date.getFullYear();
@@ -78,6 +89,67 @@ export function computeStreak(
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
+}
+
+/** Maior sequência consecutiva de dias com pelo menos uma tarefa concluída. */
+export function computeRecordStreak(history: DayStat[]): number {
+  const completedDays = new Set(
+    history.filter((d) => d.tasksCompleted > 0).map((d) => d.date),
+  );
+  if (completedDays.size === 0) return 0;
+
+  const sorted = [...completedDays].sort();
+  let max = 1;
+  let current = 1;
+
+  for (let i = 1; i < sorted.length; i += 1) {
+    const prev = new Date(`${sorted[i - 1]}T00:00:00`);
+    prev.setDate(prev.getDate() + 1);
+    if (dayKey(prev) === sorted[i]) {
+      current += 1;
+      max = Math.max(max, current);
+    } else {
+      current = 1;
+    }
+  }
+  return max;
+}
+
+/** Últimos 7 dias para os dots do TrainStreakCard (índice 0 = mais antigo). */
+export function computeWeekDots(
+  history: DayStat[],
+  tasks: Task[],
+  today: string = dayKey(),
+): DayDot[] {
+  const byDate = new Map(history.map((d) => [d.date, d]));
+  const dots: DayDot[] = [];
+  const cursor = new Date(`${today}T00:00:00`);
+  cursor.setDate(cursor.getDate() - 6);
+
+  const totalToday = tasks.length;
+  const completedToday = tasks.filter((t) => t.status === "completed").length;
+
+  for (let i = 0; i < 7; i += 1) {
+    const key = dayKey(cursor);
+    const isToday = key === today;
+
+    if (isToday) {
+      if (totalToday === 0 || completedToday === 0) {
+        dots.push({ status: "empty" });
+      } else if (completedToday === totalToday) {
+        dots.push({ status: "today-full" });
+      } else {
+        dots.push({ status: "today-partial" });
+      }
+    } else {
+      const completed = byDate.get(key)?.tasksCompleted ?? 0;
+      dots.push({ status: completed === 0 ? "empty" : "full" });
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return dots;
 }
 
 export function sortByScheduledTime(tasks: Task[]): Task[] {
