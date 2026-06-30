@@ -184,10 +184,10 @@ function TrainSVG({
   return (
     <svg
       width="100%"
-      viewBox="0 0 320 68"
+      viewBox="0 -24 320 92"
       role="img"
       aria-label="Ilustração do trem representando a sequência"
-      style={{ display: "block", overflow: "hidden" }}
+      style={{ display: "block", overflow: "visible" }}
     >
       <defs>
         <clipPath id="trilho-clip">
@@ -360,7 +360,7 @@ export function TrainStreakCard({
         </div>
       </div>
 
-      <div style={{ margin: "12px 0 6px" }}>
+      <div style={{ margin: "12px 0 6px", overflow: "visible" }}>
         <TrainSVG
           colors={colors}
           animate={state !== "stopped"}
@@ -413,18 +413,6 @@ export function TrainStreakCard({
             transition: "width 0.6s ease",
           }}
         />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: 3,
-        }}
-      >
-        <span style={{ fontSize: 11, color: "#666" }}>{streakDays} dias</span>
-        <span style={{ fontSize: 11, color: "#666" }}>
-          recorde: {recordDays}
-        </span>
       </div>
     </div>
   );
