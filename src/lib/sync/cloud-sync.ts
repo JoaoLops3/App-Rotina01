@@ -4,6 +4,8 @@ import {
   DEFAULT_PREFERENCES,
   type NotificationPreferences,
 } from "../notification-preferences";
+import { DEFAULT_DAILY_GOAL_MINUTES, mergeDailyGoalMinutes } from "../daily-goal";
+import { loadProfile } from "../profile-storage";
 import { getSupabase } from "../supabase";
 import { pruneCompletedTasks } from "../storage";
 import type { UserProfile } from "../../types/avatar";
@@ -56,7 +58,7 @@ export async function fetchProfileMeta(
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, display_name, nickname, avatar_seed, avatar_style, local_import_done",
+      "id, display_name, nickname, avatar_seed, avatar_style, daily_goal_minutes, local_import_done",
     )
     .eq("id", userId)
     .maybeSingle();
@@ -91,7 +93,7 @@ export async function pullUserSnapshot(
       supabase
         .from("profiles")
         .select(
-          "id, display_name, nickname, avatar_seed, avatar_style, local_import_done",
+          "id, display_name, nickname, avatar_seed, avatar_style, daily_goal_minutes, local_import_done",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -111,18 +113,28 @@ export async function pullUserSnapshot(
     ]);
 
   const profileRow = profileRes.data as ProfileRow | null;
+  const localProfile = loadProfile();
+
+  const remoteProfile: UserProfile = profileRow
+    ? rowToProfile(profileRow)
+    : {
+        accountName: "Alex",
+        nickname: null,
+        avatarSeed: null,
+        avatarStyle: "toon-head",
+        dailyGoalMinutes: DEFAULT_DAILY_GOAL_MINUTES,
+      };
 
   return {
     tasks: (tasksRes.data ?? []).map((row) => rowToTask(row)),
     history: (historyRes.data ?? []).map((row) => rowToDayStat(row)),
-    profile: profileRow
-      ? rowToProfile(profileRow)
-      : {
-          accountName: "Alex",
-          nickname: null,
-          avatarSeed: null,
-          avatarStyle: "toon-head",
-        },
+    profile: {
+      ...remoteProfile,
+      dailyGoalMinutes: mergeDailyGoalMinutes(
+        localProfile.dailyGoalMinutes,
+        profileRow?.daily_goal_minutes ?? remoteProfile.dailyGoalMinutes,
+      ),
+    },
     preferences: mergePreferences(
       prefsRes.data?.prefs as Partial<NotificationPreferences> | undefined,
     ),

@@ -27,6 +27,7 @@ export interface Database {
           nickname: string | null;
           avatar_seed: string | null;
           avatar_style: string;
+          daily_goal_minutes: number;
           local_import_done: boolean;
           created_at: string;
           updated_at: string;
@@ -37,6 +38,7 @@ export interface Database {
           nickname?: string | null;
           avatar_seed?: string | null;
           avatar_style?: string;
+          daily_goal_minutes?: number;
           local_import_done?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -47,6 +49,7 @@ export interface Database {
           nickname?: string | null;
           avatar_seed?: string | null;
           avatar_style?: string;
+          daily_goal_minutes?: number;
           local_import_done?: boolean;
           created_at?: string;
           updated_at?: string;

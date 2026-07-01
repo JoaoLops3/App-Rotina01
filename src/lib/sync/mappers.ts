@@ -6,6 +6,7 @@ import { loadPreferences } from "../notification-preferences";
 import { loadProfile } from "../profile-storage";
 import { loadTasks } from "../storage";
 import type { UserProfile } from "../../types/avatar";
+import { DEFAULT_DAILY_GOAL_MINUTES } from "../daily-goal";
 import type { AppNotification } from "../../types/notification";
 import type {
   DayHistoryRow,
@@ -66,6 +67,7 @@ export function profileToEditableRow(
     nickname: profile.nickname,
     avatar_seed: profile.avatarSeed,
     avatar_style: profile.avatarStyle,
+    daily_goal_minutes: profile.dailyGoalMinutes,
     local_import_done: localImportDone,
   };
 }
@@ -81,6 +83,7 @@ export function profileToRow(
     nickname: profile.nickname,
     avatar_seed: profile.avatarSeed,
     avatar_style: profile.avatarStyle,
+    daily_goal_minutes: profile.dailyGoalMinutes,
     local_import_done: localImportDone,
   };
 }
@@ -91,6 +94,7 @@ export function rowToProfile(row: ProfileRow): UserProfile {
     nickname: row.nickname,
     avatarSeed: row.avatar_seed,
     avatarStyle: "toon-head",
+    dailyGoalMinutes: row.daily_goal_minutes ?? DEFAULT_DAILY_GOAL_MINUTES,
   };
 }
 
@@ -171,6 +175,7 @@ export const EMPTY_SNAPSHOT: UserDataSnapshot = {
     nickname: null,
     avatarSeed: null,
     avatarStyle: "toon-head",
+    dailyGoalMinutes: DEFAULT_DAILY_GOAL_MINUTES,
   },
   preferences: readLocalSnapshot().preferences,
   notifications: [],

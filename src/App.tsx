@@ -39,6 +39,11 @@ const NotificationsScreen = lazy(() =>
     default: m.NotificationsScreen,
   })),
 );
+const SettingsScreen = lazy(() =>
+  import("./screens/SettingsScreen").then((m) => ({
+    default: m.SettingsScreen,
+  })),
+);
 const NotificationPreferencesScreen = lazy(() =>
   import("./screens/NotificationPreferencesScreen").then((m) => ({
     default: m.NotificationPreferencesScreen,
@@ -114,6 +119,7 @@ function AppRoutes() {
                 path="/notificacoes"
                 component={NotificationsScreen}
               />
+              <Route exact path="/preferencias" component={SettingsScreen} />
               <Route
                 exact
                 path="/notificacoes/preferencias"
