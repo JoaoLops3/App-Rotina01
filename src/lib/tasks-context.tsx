@@ -15,10 +15,16 @@ import { loadTasks, saveTasks } from "./storage";
 import {
   computeFocusSeconds,
   computeStreak,
+  computeTodayCompletedCount,
+  dayKey,
   loadHistory,
   recordToday,
   saveHistory,
 } from "./day-stats";
+import {
+  loadLastFocusDay,
+  rolloverTasksIfNewDay,
+} from "./day-rollover";
 import { captureEvent } from "./posthog";
 import { taskAnalyticsProps } from "./analytics-task";
 import { useAuth } from "./auth-context";
@@ -27,8 +33,6 @@ import {
   cancelTaskNotifications,
   requestNotificationPermission,
 } from "./native-notifications";
-
-export const DAILY_GOAL_MINUTES = 300;
 
 interface ActiveSession {
   taskId: string;
@@ -48,7 +52,8 @@ function getWallClockElapsed(
 }
 
 function getInitialTasks(): Task[] {
-  return loadTasks() ?? [];
+  const loaded = loadTasks() ?? [];
+  return rolloverTasksIfNewDay(loaded);
 }
 
 function applyCompletion(
@@ -131,7 +136,8 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     registerSyncHandlers({
-      applyTasks: (nextTasks) => setTasks(nextTasks),
+      applyTasks: (nextTasks) =>
+        setTasks(rolloverTasksIfNewDay(nextTasks)),
       applyHistory: (history) => {
         saveHistory(history);
         setStreak(computeStreak(history));
@@ -145,7 +151,7 @@ export function TasksProvider({ children }: { children: ReactNode }) {
 
   const activeTask = tasks.find((t) => t.status === "active");
   const focusSeconds = computeFocusSeconds(tasks);
-  const completedCount = tasks.filter((t) => t.status === "completed").length;
+  const completedCount = computeTodayCompletedCount(tasks);
 
   const completedRecordedRef = useRef<Set<string>>(
     new Set(
@@ -165,6 +171,31 @@ export function TasksProvider({ children }: { children: ReactNode }) {
     (task: Task) => getWallClockElapsed(task, activeSessionRef.current),
     [],
   );
+
+  const runDayRollover = useCallback(() => {
+    const today = dayKey();
+    if (loadLastFocusDay() === today) return;
+
+    setTasks((prev) => {
+      let next = prev;
+      const active = prev.find((t) => t.status === "active");
+      if (active) {
+        const flushed = getWallClockElapsed(active, activeSessionRef.current);
+        next = prev.map((t) =>
+          t.id === active.id ? { ...t, elapsed: flushed } : t,
+        );
+      }
+      return rolloverTasksIfNewDay(next, today);
+    });
+
+    if (activeSessionRef.current) {
+      activeSessionRef.current = {
+        ...activeSessionRef.current,
+        startedAtMs: Date.now(),
+        elapsedAtStart: 0,
+      };
+    }
+  }, []);
 
   // Persiste o elapsed da tarefa ativa a partir do relógio de parede. Usado nas
   // transições de app (background/foreground), ao esconder a aba e na conclusão
@@ -193,14 +224,15 @@ export function TasksProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
-    const listener = CapApp.addListener("appStateChange", () => {
+    const listener = CapApp.addListener("appStateChange", ({ isActive }) => {
       flushActiveElapsed();
+      if (isActive) runDayRollover();
     });
 
     return () => {
       void listener.then((handle) => handle.remove());
     };
-  }, [flushActiveElapsed]);
+  }, [flushActiveElapsed, runDayRollover]);
 
   useEffect(() => {
     if (!activeTask) {
@@ -260,6 +292,22 @@ export function TasksProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("pagehide", flushActiveElapsed);
     };
   }, [flushActiveElapsed]);
+
+  // Virada do dia: zera elapsed de tarefas não concluídas (foco diário).
+  useEffect(() => {
+    runDayRollover();
+
+    const interval = setInterval(runDayRollover, 60_000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") runDayRollover();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [runDayRollover]);
 
   useEffect(() => {
     const history = recordToday({

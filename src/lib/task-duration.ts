@@ -1,5 +1,7 @@
 export const MIN_DURATION_SECONDS = 60;
 export const MAX_DURATION_SECONDS = 8 * 3600;
+export const DURATION_STEP_SECONDS = 15 * 60;
+export const DEFAULT_DURATION_SECONDS = 30 * 60;
 
 export interface DurationParts {
   hours: number;
@@ -34,6 +36,37 @@ export function partsToFieldStrings(seconds: number): {
     hours: String(hours),
     minutes: String(minutes),
   };
+}
+
+export function validateDurationSeconds(seconds: number): string | null {
+  if (!Number.isFinite(seconds)) {
+    return "Duração inválida";
+  }
+  if (seconds < MIN_DURATION_SECONDS) {
+    return "Duração mínima é 1 minuto";
+  }
+  if (seconds > MAX_DURATION_SECONDS) {
+    return "Duração máxima é 8 horas";
+  }
+  return null;
+}
+
+export function snapDurationSeconds(seconds: number): number {
+  const snapped =
+    Math.round(seconds / DURATION_STEP_SECONDS) * DURATION_STEP_SECONDS;
+  return Math.min(
+    MAX_DURATION_SECONDS,
+    Math.max(MIN_DURATION_SECONDS, snapped),
+  );
+}
+
+/** ±1 passo do stepper; piso em 15 min, teto em 8 h. */
+export function stepDurationSeconds(current: number, delta: number): number {
+  const next = current + delta;
+  return Math.min(
+    MAX_DURATION_SECONDS,
+    Math.max(DURATION_STEP_SECONDS, next),
+  );
 }
 
 export function validateDurationParts(

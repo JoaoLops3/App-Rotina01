@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { motion } from "../lib/motion";
 import { IonPage, IonContent } from "@ionic/react";
+import { FocusWeekChart } from "../components/FocusWeekChart";
 import { StatsWidget } from "../components/StatsWidget";
 import { TrainStreakCard } from "../components/TrainStreakCard";
 import { OrbBackground } from "../components/OrbBackground";
@@ -9,50 +10,36 @@ import {
   computeFocusSeconds,
   computeGoalPercent,
   computeRecordStreak,
+  computeTodayCompletedCount,
   computeWeekDots,
-  dayKey,
+  filterTodayAgendaTasks,
   formatFocusTime,
   loadHistory,
-  type DayStat,
 } from "../lib/day-stats";
-import { DAILY_GOAL_MINUTES, useTasks } from "../lib/tasks-context";
-
-const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-function lastSevenDays(history: DayStat[]): DayStat[] {
-  const byDate = new Map(history.map((d) => [d.date, d]));
-  const days: DayStat[] = [];
-  const cursor = new Date();
-  cursor.setDate(cursor.getDate() - 6);
-  for (let i = 0; i < 7; i += 1) {
-    const key = dayKey(cursor);
-    days.push(
-      byDate.get(key) ?? { date: key, tasksCompleted: 0, focusSeconds: 0 },
-    );
-    cursor.setDate(cursor.getDate() + 1);
-  }
-  return days;
-}
+import { useDailyGoal } from "../lib/use-daily-goal";
+import { useActiveElapsed, useTasks } from "../lib/tasks-context";
 
 export function StatsScreen() {
   const { tasks, streak } = useTasks();
 
-  const focusSeconds = computeFocusSeconds(tasks);
+  const activeTask = tasks.find((t) => t.status === "active");
+  const liveElapsed = useActiveElapsed(activeTask);
+  const focusSeconds = activeTask
+    ? computeFocusSeconds(tasks) - activeTask.elapsed + liveElapsed
+    : computeFocusSeconds(tasks);
   const focusMinutes = Math.floor(focusSeconds / 60);
-  const dailyGoal = DAILY_GOAL_MINUTES;
+  const dailyGoal = useDailyGoal();
   const goalHours = Math.round(dailyGoal / 60);
   const focusPercent = computeGoalPercent(focusMinutes, dailyGoal);
 
-  const completedTasks = tasks.filter((t) => t.status === "completed");
-  const remainingTasks = tasks.length - completedTasks.length;
+  const todayAgenda = filterTodayAgendaTasks(tasks);
+  const completedToday = computeTodayCompletedCount(tasks);
+  const remainingTasks = todayAgenda.length - completedToday;
   const tasksPercent =
-    tasks.length > 0
-      ? Math.round((completedTasks.length / tasks.length) * 100)
+    todayAgenda.length > 0
+      ? Math.round((completedToday / todayAgenda.length) * 100)
       : 0;
 
-  const week = lastSevenDays(loadHistory());
-  const maxFocus = Math.max(...week.map((d) => d.focusSeconds), 1);
-  const todayKey = dayKey();
   const history = loadHistory();
   const recordDays = computeRecordStreak(history);
   const weekDots = computeWeekDots(history, tasks);
@@ -60,8 +47,8 @@ export function StatsScreen() {
   useEffect(() => {
     captureEvent("stats viewed", {
       focus_minutes: focusMinutes,
-      tasks_completed: completedTasks.length,
-      total_tasks: tasks.length,
+      tasks_completed: completedToday,
+      total_tasks: todayAgenda.length,
       streak_days: streak,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -97,7 +84,7 @@ export function StatsScreen() {
                   focusValue: formatFocusTime(focusMinutes),
                   focusGoalLabel: `${focusPercent}% da meta de ${goalHours}h`,
                   focusProgress: focusPercent,
-                  tasksValue: `${completedTasks.length} / ${tasks.length}`,
+                  tasksValue: `${completedToday} / ${todayAgenda.length}`,
                   tasksRemainingLabel: `${remainingTasks} ${remainingTasks === 1 ? "restante" : "restantes"} hoje`,
                   tasksProgress: tasksPercent,
                 }}
@@ -122,47 +109,16 @@ export function StatsScreen() {
               transition={{ delay: 0.1 }}
               className="card-glass p-5"
             >
-              <h2 className="font-display font-semibold text-lg text-white mb-4">
+              <h2 className="font-display font-semibold text-lg text-white mb-1">
                 Foco nos últimos 7 dias
               </h2>
-              <div className="flex items-end justify-between gap-2 h-36">
-                {week.map((day) => {
-                  const heightPct = Math.round(
-                    (day.focusSeconds / maxFocus) * 100,
-                  );
-                  const isToday = day.date === todayKey;
-                  const weekday =
-                    WEEKDAY_LABELS[new Date(`${day.date}T00:00:00`).getDay()];
-                  const minutes = Math.floor(day.focusSeconds / 60);
-                  return (
-                    <div
-                      key={day.date}
-                      className="flex flex-1 flex-col items-center gap-2"
-                    >
-                      <div className="flex w-full flex-1 items-end justify-center">
-                        <motion.div
-                          initial={{ height: 0 }}
-                          animate={{ height: `${Math.max(heightPct, 4)}%` }}
-                          transition={{ duration: 0.6, ease: "easeOut" }}
-                          className={`w-full max-w-[28px] rounded-t-lg ${
-                            isToday
-                              ? "bg-gradient-to-t from-mint-500 to-mint-400"
-                              : "bg-white/10"
-                          }`}
-                          title={`${minutes} min`}
-                        />
-                      </div>
-                      <span
-                        className={`text-[10px] uppercase tracking-wide ${
-                          isToday ? "text-mint-400" : "text-obsidian-500"
-                        }`}
-                      >
-                        {weekday}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+              <p className="text-obsidian-500 text-xs mb-4">
+                Quanto mais alta, mais você focou naquele dia.
+              </p>
+              <FocusWeekChart
+                history={history}
+                todayFocusSeconds={focusSeconds}
+              />
             </motion.section>
           </div>
         </div>

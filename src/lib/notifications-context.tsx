@@ -40,7 +40,8 @@ import {
   type NotificationPreferences,
 } from "./notification-preferences";
 import { syncNativeSchedules } from "./native-notifications";
-import { DAILY_GOAL_MINUTES, useTasks } from "./tasks-context";
+import { useTasks } from "./tasks-context";
+import { useProfile } from "./profile-context";
 import { useAuth } from "./auth-context";
 import { useSync } from "./sync-context";
 
@@ -74,6 +75,7 @@ export function useNotifications(): NotificationsContextValue {
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { tasks, streak } = useTasks();
+  const { profile } = useProfile();
   const { isAuthenticated } = useAuth();
   const {
     registerSyncHandlers,
@@ -98,6 +100,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const tasksRef = useRef(tasks);
   const streakRef = useRef(streak);
   const preferencesRef = useRef(preferences);
+  const dailyGoalMinutesRef = useRef(profile.dailyGoalMinutes);
   useEffect(() => {
     tasksRef.current = tasks;
   }, [tasks]);
@@ -107,6 +110,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     preferencesRef.current = preferences;
   }, [preferences]);
+  useEffect(() => {
+    dailyGoalMinutesRef.current = profile.dailyGoalMinutes;
+  }, [profile.dailyGoalMinutes]);
 
   const knownCompletedRef = useRef<Set<string>>(
     new Set(tasks.filter((t) => t.status === "completed").map((t) => t.id)),
@@ -175,8 +181,9 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
     if (prefs.enabled.daily_goal_reached) {
       const focusMinutes = Math.floor(computeFocusSeconds(currentTasks) / 60);
-      if (focusMinutes >= DAILY_GOAL_MINUTES) {
-        const goalHours = Math.round(DAILY_GOAL_MINUTES / 60);
+      const dailyGoalMinutes = dailyGoalMinutesRef.current;
+      if (focusMinutes >= dailyGoalMinutes) {
+        const goalHours = Math.round(dailyGoalMinutes / 60);
         const copy = buildDailyGoalCopy(goalHours);
         push({
           type: "daily_goal_reached",
@@ -252,7 +259,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     runGeneration();
-  }, [streak, preferences, runGeneration]);
+  }, [streak, preferences, profile.dailyGoalMinutes, runGeneration]);
 
   useEffect(() => {
     void syncNativeSchedules(tasks, preferences);

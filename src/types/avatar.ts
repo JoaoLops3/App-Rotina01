@@ -5,6 +5,8 @@ export interface UserProfile {
   nickname: string | null;
   avatarSeed: string | null;
   avatarStyle: AvatarStyle;
+  /** Meta de foco diária em minutos. */
+  dailyGoalMinutes: number;
 }
 
 export interface AvatarProps {

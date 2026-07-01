@@ -16,7 +16,8 @@ import { saveHistory } from "./day-stats";
 import type { NotificationPreferences } from "./notification-preferences";
 import { saveNotifications } from "./notification-storage";
 import { savePreferences } from "./notification-preferences";
-import { saveProfile } from "./profile-storage";
+import { mergeDailyGoalMinutes } from "./daily-goal";
+import { loadProfile, saveProfile } from "./profile-storage";
 import { saveTasks } from "./storage";
 import type { UserProfile } from "../types/avatar";
 import type { AppNotification } from "../types/notification";
@@ -58,6 +59,7 @@ interface SyncContextValue {
   scheduleTasksPush: (tasks: Task[]) => void;
   scheduleHistoryPush: (history: DayStat[]) => void;
   scheduleProfilePush: (profile: UserProfile) => void;
+  pushProfileNow: (profile: UserProfile) => Promise<void>;
   schedulePreferencesPush: (preferences: NotificationPreferences) => void;
   scheduleNotificationsPush: (notifications: AppNotification[]) => void;
   resolveImport: (useLocalData: boolean) => Promise<void>;
@@ -103,12 +105,21 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const applySnapshot = useCallback((snapshot: UserDataSnapshot) => {
     isApplyingRemoteRef.current = true;
     setIsApplyingRemote(true);
-    handlersRef.current.applyTasks?.(snapshot.tasks);
-    handlersRef.current.applyProfile?.(snapshot.profile);
-    handlersRef.current.applyHistory?.(snapshot.history);
-    handlersRef.current.applyNotifications?.(snapshot.notifications);
-    handlersRef.current.applyPreferences?.(snapshot.preferences);
-    persistSnapshotLocally(snapshot);
+    const local = loadProfile();
+    const mergedProfile: UserProfile = {
+      ...snapshot.profile,
+      dailyGoalMinutes: mergeDailyGoalMinutes(
+        local.dailyGoalMinutes,
+        snapshot.profile.dailyGoalMinutes,
+      ),
+    };
+    const mergedSnapshot = { ...snapshot, profile: mergedProfile };
+    handlersRef.current.applyTasks?.(mergedSnapshot.tasks);
+    handlersRef.current.applyProfile?.(mergedProfile);
+    handlersRef.current.applyHistory?.(mergedSnapshot.history);
+    handlersRef.current.applyNotifications?.(mergedSnapshot.notifications);
+    handlersRef.current.applyPreferences?.(mergedSnapshot.preferences);
+    persistSnapshotLocally(mergedSnapshot);
     window.setTimeout(() => {
       isApplyingRemoteRef.current = false;
       setIsApplyingRemote(false);
@@ -213,6 +224,16 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     [schedulePush, userId],
   );
 
+  const pushProfileNow = useCallback(
+    async (profile: UserProfile) => {
+      if (!userId || isApplyingRemoteRef.current) return;
+      const existing = pushTimersRef.current.profile;
+      if (existing) clearTimeout(existing);
+      await syncProfileToCloud(userId, profile);
+    },
+    [userId],
+  );
+
   const schedulePreferencesPush = useCallback(
     (preferences: NotificationPreferences) => {
       schedulePush("preferences", () =>
@@ -272,6 +293,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       scheduleTasksPush,
       scheduleHistoryPush,
       scheduleProfilePush,
+      pushProfileNow,
       schedulePreferencesPush,
       scheduleNotificationsPush,
       resolveImport,
@@ -285,6 +307,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
       scheduleTasksPush,
       scheduleHistoryPush,
       scheduleProfilePush,
+      pushProfileNow,
       schedulePreferencesPush,
       scheduleNotificationsPush,
       resolveImport,

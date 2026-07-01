@@ -236,10 +236,7 @@ export function ProfileScreen() {
                   icon={Settings}
                   label="Preferências"
                   onClick={() =>
-                    history.push(
-                      "/notificacoes/preferencias",
-                      tabNavigationState("profile"),
-                    )
+                    history.push("/preferencias", tabNavigationState("profile"))
                   }
                 />
               </div>

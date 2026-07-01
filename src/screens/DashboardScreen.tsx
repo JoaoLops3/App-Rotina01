@@ -8,11 +8,8 @@ import { ProgressRing } from "../components/ProgressRing";
 import { OrbBackground } from "../components/OrbBackground";
 import { captureEvent } from "../lib/posthog";
 import { computeFocusSeconds, sortByScheduledTime } from "../lib/day-stats";
-import {
-  DAILY_GOAL_MINUTES,
-  useActiveElapsed,
-  useTasks,
-} from "../lib/tasks-context";
+import { useDailyGoal } from "../lib/use-daily-goal";
+import { useActiveElapsed, useTasks } from "../lib/tasks-context";
 import { useProfile } from "../lib/profile-context";
 import { getShownName } from "../lib/profile-storage";
 
@@ -76,7 +73,8 @@ export function DashboardScreen() {
     ? computeFocusSeconds(tasks) - activeTask.elapsed + liveElapsed
     : computeFocusSeconds(tasks);
   const focusMinutes = Math.floor(focusSeconds / 60);
-  const goalHours = Math.round(DAILY_GOAL_MINUTES / 60);
+  const dailyGoalMinutes = useDailyGoal();
+  const goalHours = Math.round(dailyGoalMinutes / 60);
   const sessionProgress = activeTask
     ? Math.min((liveElapsed / activeTask.duration) * 100, 100)
     : 0;

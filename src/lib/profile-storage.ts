@@ -1,5 +1,9 @@
 import type { UserProfile } from "../types/avatar";
 
+import {
+  DEFAULT_DAILY_GOAL_MINUTES,
+  LEGACY_DAILY_GOAL_MINUTES,
+} from "./daily-goal";
 import { STORAGE_KEYS } from "./storage-keys";
 
 const STORAGE_KEY = STORAGE_KEYS.profile;
@@ -14,7 +18,16 @@ const DEFAULT_PROFILE: UserProfile = {
   nickname: null,
   avatarSeed: null,
   avatarStyle: "toon-head",
+  dailyGoalMinutes: DEFAULT_DAILY_GOAL_MINUTES,
 };
+
+function resolveDailyGoalMinutes(parsed: Record<string, unknown>): number {
+  if (typeof parsed.dailyGoalMinutes === "number" && parsed.dailyGoalMinutes > 0) {
+    return parsed.dailyGoalMinutes;
+  }
+  // Perfil local já existente antes da feature: mantém 5h.
+  return LEGACY_DAILY_GOAL_MINUTES;
+}
 
 export function getShownName(profile: UserProfile): string {
   return (
@@ -51,6 +64,7 @@ function migrateLegacyProfile(parsed: Record<string, unknown>): UserProfile {
       avatarSeed:
         typeof parsed.avatarSeed === "string" ? parsed.avatarSeed : null,
       avatarStyle: "toon-head",
+      dailyGoalMinutes: resolveDailyGoalMinutes(parsed),
     };
   }
 
@@ -63,6 +77,7 @@ function migrateLegacyProfile(parsed: Record<string, unknown>): UserProfile {
     avatarSeed:
       typeof parsed.avatarSeed === "string" ? parsed.avatarSeed : null,
     avatarStyle: "toon-head",
+    dailyGoalMinutes: resolveDailyGoalMinutes(parsed),
   };
 }
 

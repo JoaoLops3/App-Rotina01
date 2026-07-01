@@ -126,8 +126,9 @@ export function computeWeekDots(
   const cursor = new Date(`${today}T00:00:00`);
   cursor.setDate(cursor.getDate() - 6);
 
-  const totalToday = tasks.length;
-  const completedToday = tasks.filter((t) => t.status === "completed").length;
+  const todayAgenda = filterTodayAgendaTasks(tasks, today);
+  const totalToday = todayAgenda.length;
+  const completedToday = computeTodayCompletedCount(tasks, today);
 
   for (let i = 0; i < 7; i += 1) {
     const key = dayKey(cursor);
@@ -168,13 +169,51 @@ export function sortByScheduledTime(tasks: Task[]): Task[] {
   );
 }
 
-export function computeFocusSeconds(tasks: Task[]): number {
+export function isTaskCompletedOnDay(
+  task: Task,
+  day: string = dayKey(),
+): boolean {
+  return (
+    task.status === "completed" &&
+    !!task.completedAt &&
+    dayKey(new Date(task.completedAt)) === day
+  );
+}
+
+/** Tarefas do dia: pendentes/ativas/pausadas + concluídas hoje (arquivo antigo fica de fora). */
+export function isTaskInTodayAgenda(
+  task: Task,
+  day: string = dayKey(),
+): boolean {
+  if (task.status !== "completed") return true;
+  return isTaskCompletedOnDay(task, day);
+}
+
+export function filterTodayAgendaTasks(
+  tasks: Task[],
+  day: string = dayKey(),
+): Task[] {
+  return tasks.filter((task) => isTaskInTodayAgenda(task, day));
+}
+
+export function computeTodayCompletedCount(
+  tasks: Task[],
+  day: string = dayKey(),
+): number {
+  return tasks.filter((task) => isTaskCompletedOnDay(task, day)).length;
+}
+
+/** Soma foco apenas do dia atual (concluídas hoje + timer de ativas/pausadas). */
+export function computeFocusSeconds(
+  tasks: Task[],
+  day: string = dayKey(),
+): number {
   return tasks.reduce((sum, task) => {
-    if (
-      task.status === "completed" ||
-      task.status === "active" ||
-      task.status === "paused"
-    ) {
+    if (task.status === "completed") {
+      if (!isTaskCompletedOnDay(task, day)) return sum;
+      return sum + task.elapsed;
+    }
+    if (task.status === "active" || task.status === "paused") {
       return sum + task.elapsed;
     }
     return sum;
